@@ -19,15 +19,7 @@
 extern int errno;
 
 enum C_TYPE {
-  C_ADD,
-  C_SUB,
-  C_NEG,
-  C_EQ,
-  C_GT,
-  C_LT,
-  C_AND,
-  C_OR,
-  C_NOT,
+  C_ARITHMETIC,
   C_PUSH,
   C_POP,
   C_LABEL,
@@ -53,57 +45,33 @@ void print_op(struct Operation op){
   char cmd[32] = {0};
   
   switch (op.type) {
-  case C_ADD:
-    printf("  add\n");
-    break;
-  case C_SUB:
-    printf("  sub\n");
-    break;
-  case C_NEG:
-    printf("  neg\n");
-    break;
-  case C_EQ:
-    printf("  eq\n");
-    break;
-  case C_GT:
-    printf("  gt\n");
-    break;
-  case C_LT:
-    printf("  lt\n");
-    break;
-  case C_AND:
-    printf("  and\n");
-    break;
-  case C_OR:
-    printf("  or\n");
-    break;
-  case C_NOT:
-    printf("  not\n");
-    break;
-  case C_PUSH:
-    printf("  push %s %d\n", op.arg1, op.arg2);
-    break;
-  case C_POP:
-    printf("  pop %s %d\n", op.arg1, op.arg2);
-    break;
-  case C_LABEL:
-    printf("label %s\n", op.arg1);
-    break;
-  case C_GOTO:
-    printf("  goto %s\n", op.arg1);
-    break;
-  case C_IF:
-    printf("  if-goto %s\n", op.arg1);
-    break;
-  case C_FUNCTION:
-    printf("function %s %d\n", op.arg1, op.arg2);
-    break;
-  case C_RETURN:
-    printf("  return\n");
-    break;
-  case C_CALL:
-    printf("  call %s %d\n", op.arg1, op.arg2);
-    break;
+    case C_ARITHMETIC:
+      printf("  %s\n", op.arg1);
+      break;
+    case C_PUSH:
+      printf("  push %s %d\n", op.arg1, op.arg2);
+      break;
+    case C_POP:
+      printf("  pop %s %d\n", op.arg1, op.arg2);
+      break;
+    case C_LABEL:
+      printf("label %s\n", op.arg1);
+      break;
+    case C_GOTO:
+      printf("  goto %s\n", op.arg1);
+      break;
+    case C_IF:
+      printf("  if-goto %s\n", op.arg1);
+      break;
+    case C_FUNCTION:
+      printf("function %s %d\n", op.arg1, op.arg2);
+      break;
+    case C_RETURN:
+      printf("  return\n");
+      break;
+    case C_CALL:
+      printf("  call %s %d\n", op.arg1, op.arg2);
+      break;
   }
 
 }
@@ -117,24 +85,16 @@ int tokenize(char *line, struct Operation *op){
   }
   
   // TODO Add LABEL, GOTO, etc...
-  if(strcmp(token, "add") == 0) {
-    op->type = C_ADD;
-  } else if(strcmp(token, "sub") == 0) {
-    op->type = C_SUB;
-  } else if(strcmp(token, "neg") == 0) {
-    op->type = C_NEG;
-  } else if(strcmp(token, "eq") == 0 ) {
-    op->type = C_EQ;
-  } else if(strcmp(token, "gt") == 0 ) {
-    op->type = C_GT;
-  } else if(strcmp(token, "lt") == 0 ) {
-    op->type = C_LT;
-  } else if(strcmp(token, "and") == 0) {
-    op->type = C_AND;
-  } else if(strcmp(token, "or") == 0 ) {
-    op->type = C_OR;
-  } else if(strcmp(token, "not") == 0) {
-    op->type = C_NOT;
+  if(strcmp(token, "add") == 0 ||
+     strcmp(token, "sub") == 0 ||
+     strcmp(token, "neg") == 0 ||
+     strcmp(token, "eq") == 0  ||
+     strcmp(token, "gt") == 0  ||
+     strcmp(token, "lt") == 0  ||
+     strcmp(token, "and") == 0 ||
+     strcmp(token, "or") == 0  ||
+     strcmp(token, "not") == 0) {
+    op->type = C_ARITHMETIC;
   } else if(strcmp(token, "push") == 0) {
     op->type = C_PUSH;
   } else if(strcmp(token, "pop") == 0) {
@@ -142,6 +102,11 @@ int tokenize(char *line, struct Operation *op){
   } else {
     fprintf(stderr, "Invalid token: %s\n", token);
     return(1);
+  }
+
+  if (op->type == C_ARITHMETIC) {
+    strcpy(op->arg1, token);
+    return 0;
   }
 
   token = strtok(NULL, " \n");
@@ -160,22 +125,19 @@ int tokenize(char *line, struct Operation *op){
   return 0;
 }
 
-// returns the first empty operation
 int lex_file(FILE *fp, struct Operation *program) {
   // blank line and lines starting with // should be skipped
   char *line = NULL;
   size_t len = 0;
-  int count = 0;
   while (getline(&line, &len, fp)!= -1){
     // returns 1 on error, -1 if line skipped
-    if(tokenize(line, program) == 0){
-      /* print_op(*program); */
-      count++;
+    if(tokenize(line, program) != -1){
+      //      print_op(*program);
       program++;
     }
   }
   free(line);
-  return count;
+  return 0;
 }
 
 int main(int argc, char *argv[]){
@@ -183,7 +145,6 @@ int main(int argc, char *argv[]){
   struct Operation program[ROM_SZ] = {0};
   FILE *fp = NULL;
   int errnum; 
-  int prog_end = 0;
 
   if (argc < 2) {
     usage();
@@ -196,7 +157,7 @@ int main(int argc, char *argv[]){
     perror("Couldn't open file");
   }
 
-  prog_end = lex_file(fp, program);
+  lex_file(fp, program);
       
   return 0;
 }
