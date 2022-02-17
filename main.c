@@ -1,24 +1,62 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 
 #define RAM_SZ 32768
 #define ROM_SZ 32768
-#define SP        256
-#define SP_BASE     0
-#define LCL_BASE    1
-#define ARG_BASE    1
-#define THIS_BASE   1
-#define THAT_BASE   1
-#define TEMP_BASE   1
-#define R13        13
-#define R14        14
-#define R15        15
 
 extern int errno;
 
-enum C_TYPE {
+typedef struct parsed_op {
+  char cmd[32];
+  char arg1[64];
+  char arg2[32];
+} parsed_op;
+
+int lex_file(FILE *fp, parsed_op *op) {
+  char *line = NULL;
+  size_t len = 0;
+  int prog_line = 0;
+  char *token = NULL;
+  parsed_op *curr = NULL;
+
+  while(getline(&line, &len, fp) != -1){
+    token = strtok(line, " \n");
+    // skip comments and empty lines
+    if (token == NULL || token[0] == '/') continue;
+
+    curr = op;
+    op++;
+    prog_line++;
+    strcpy(curr->cmd, token);
+    curr->arg1[0] = '\0';
+    curr->arg2[0] = '\0';
+    token = strtok(NULL, " \n");
+    if (token == NULL) continue;
+    strcpy(curr->arg1, token);
+    token = strtok(NULL, " \n");
+    if (token == NULL) continue;
+    strcpy(curr->arg2, token);
+  }
+  return prog_line;
+}
+
+void print_parsed_prog(parsed_op prog_parsed[], int len){
+  for(int i = 0; i < len; i++){
+    parsed_op op = prog_parsed[i];
+    printf("%s", op.cmd);
+    if (*op.arg1) printf(" %s", op.arg1);
+    if (*op.arg2) printf(" %s", op.arg2);
+    printf("\n");
+  }
+}
+
+/*
+  operation encoding
+*/
+enum CMD {
   C_ARITHMETIC,
   C_PUSH,
   C_POP,
@@ -30,124 +68,46 @@ enum C_TYPE {
   C_CALL,
 };
 
-struct Operation {
-  enum C_TYPE type;
-  char arg1[32];
-  int16_t arg2;
-};
+typedef struct encoded_op {
+  enum CMD cmd;
+  uint16_t arg1;
+  uint16_t arg2;
+} op;
 
-void usage(void) {
-  printf("Usage: hackvm <file>\n");
-}
+typedef struct ref {
+  char arg[64];
+  uint16_t addr;
+} ref;
 
-
-void print_op(struct Operation op){
-  char cmd[32] = {0};
-  
-  switch (op.type) {
-    case C_ARITHMETIC:
-      printf("  %s\n", op.arg1);
-      break;
-    case C_PUSH:
-      printf("  push %s %d\n", op.arg1, op.arg2);
-      break;
-    case C_POP:
-      printf("  pop %s %d\n", op.arg1, op.arg2);
-      break;
-    case C_LABEL:
-      printf("label %s\n", op.arg1);
-      break;
-    case C_GOTO:
-      printf("  goto %s\n", op.arg1);
-      break;
-    case C_IF:
-      printf("  if-goto %s\n", op.arg1);
-      break;
-    case C_FUNCTION:
-      printf("function %s %d\n", op.arg1, op.arg2);
-      break;
-    case C_RETURN:
-      printf("  return\n");
-      break;
-    case C_CALL:
-      printf("  call %s %d\n", op.arg1, op.arg2);
-      break;
-  }
-
-}
-
-// returns 1 on error, -1 if line skipped
-int tokenize(char *line, struct Operation *op){
-  // TODO add error checking
-  char *token = strtok(line, " \n");
-  if (token == NULL || token[0] == '/') {
-    return -1;
-  }
-  
-  // TODO Add LABEL, GOTO, etc...
-  if(strcmp(token, "add") == 0 ||
-     strcmp(token, "sub") == 0 ||
-     strcmp(token, "neg") == 0 ||
-     strcmp(token, "eq") == 0  ||
-     strcmp(token, "gt") == 0  ||
-     strcmp(token, "lt") == 0  ||
-     strcmp(token, "and") == 0 ||
-     strcmp(token, "or") == 0  ||
-     strcmp(token, "not") == 0) {
-    op->type = C_ARITHMETIC;
-  } else if(strcmp(token, "push") == 0) {
-    op->type = C_PUSH;
-  } else if(strcmp(token, "pop") == 0) {
-    op->type = C_POP;
-  } else {
-    fprintf(stderr, "Invalid token: %s\n", token);
-    return(1);
-  }
-
-  if (op->type == C_ARITHMETIC) {
-    strcpy(op->arg1, token);
-    return 0;
-  }
-
-  token = strtok(NULL, " \n");
-  if(token) {
-    strcpy(op->arg1, token);
-  }
-
-  token = strtok(NULL, " \n");
-  if(token) {
-    op->arg2 = atoi(token);
-    if(op->arg2 != 0 && token[0] == '0') {
-      fprintf(stderr, "invalid arg2: %s\n", token);
-      return 1;
+void build_ref_table(ref *ref_table,
+		     int *ref_table_end,
+		     parsed_op *op,
+		     int prog_end) {
+  ref *ref = ref_table;
+  for(int addr = 0; addr < prog_end; addr++) {
+    parsed_op *curr_op = &op[addr];
+    if (strcmp(curr_op->cmd, "label") == 0 ||
+	strcmp(curr_op->cmd, "function") == 0) {
+      strcpy(ref->arg, curr_op->arg1);
+      ref->addr = addr;
+      (*ref_table_end)++;
+      ref = ref_table + *ref_table_end;
     }
   }
-  return 0;
-}
-
-int lex_file(FILE *fp, struct Operation *program) {
-  // blank line and lines starting with // should be skipped
-  char *line = NULL;
-  size_t len = 0;
-  while (getline(&line, &len, fp)!= -1){
-    // returns 1 on error, -1 if line skipped
-    if(tokenize(line, program) != -1){
-      //      print_op(*program);
-      program++;
-    }
-  }
-  free(line);
-  return 0;
 }
 
 int main(int argc, char *argv[]){
   int16_t ram[RAM_SZ] = {0};
-  struct Operation program[ROM_SZ] = {0};
+  parsed_op prog_parsed[ROM_SZ] = {0};
   FILE *fp = NULL;
+  int prog_end = 0;
   int errnum; 
 
+  ref ref_table[16384] = {0};
+  int ref_table_end = 0;
+
+  // no input given
   if (argc < 2) {
-    usage();
     exit(1);
   }
 
@@ -157,7 +117,11 @@ int main(int argc, char *argv[]){
     perror("Couldn't open file");
   }
 
-  lex_file(fp, program);
-      
+  prog_end = lex_file(fp, prog_parsed);
+  /* print_parsed_prog(prog_parsed, prog_end); */
+  build_ref_table(ref_table, &ref_table_end, prog_parsed, prog_end);
+  for(int i = 0; i < ref_table_end; i++){
+    printf("%d %s\n", ref_table[i].addr, ref_table[i].arg);
+  }
   return 0;
 }
