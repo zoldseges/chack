@@ -22,10 +22,11 @@ typedef struct class {
   char fpath[256];
   char cname[64];
   parsed_op prog[ROM_SZ];
-  int prog_end;
+  int prog_lines;
 } class;
 
-int lex_file(class *class) {
+// return 0 on success
+int lex(class *class) {
   FILE *fp = fopen(class->fpath, "r");
   char *line = NULL;
   size_t len = 0;
@@ -52,18 +53,16 @@ int lex_file(class *class) {
     if (token == NULL) continue;
     strcpy(curr->arg2, token);
   }
+  class->prog_lines = prog_line;
   fclose(fp);
-  return prog_line;
+  return 0;
 }
 
-void print_parsed_class(parsed_op prog_parsed[], int len){
-  for(int i = 0; i < len; i++){
-    parsed_op op = prog_parsed[i];
-    printf("%s", op.cmd);
-    if (*op.arg1) printf(" %s", op.arg1);
-    if (*op.arg2) printf(" %s", op.arg2);
-    printf("\n");
-  }
+void print_parsed_op(parsed_op op){
+  printf("%s", op.cmd);
+  if (*op.arg1) printf(" %s", op.arg1);
+  if (*op.arg2) printf(" %s", op.arg2);
+  printf("\n");
 }
 
 /*
@@ -117,8 +116,16 @@ int get_class_paths(class *classes, char *input) {
   int file_or_dir = is_file_or_dir(input);
   char path[256];
   if (file_or_dir == 1) {
+    char *cname = {0};
     count = 1;
     strcpy(classes[0].fpath, input);
+    for(int i = 0; input[i] != '\0'; i++){
+      if(i > 0 && input[i-1] == '/'){
+	cname = &input[i];
+      }
+    }
+    strcpy(classes[0].cname, cname);
+    strtok(classes[0].cname, ".");
   } else if (file_or_dir == 2) {
     //set last char to "/"
     strcpy(path, input);
@@ -180,7 +187,14 @@ int main(int argc, char *argv[]){
   parsed_classes = malloc(sizeof(class) * 64);
   class_count = get_class_paths(parsed_classes, input);
   for(int i = 0; i < class_count; i++){
-    printf("%-16s %s\n", parsed_classes[i].fpath, parsed_classes[i].cname);
+    lex(&parsed_classes[i]);
+  }
+
+  for(int i = 0; i < class_count; i++){
+    printf("----- %-16s -----\n", parsed_classes[i].cname);
+    for(int j = 0; j < parsed_classes[i].prog_lines; j++){
+      print_parsed_op(parsed_classes[i].prog[j]);
+    }
   }
   /* prog_end = lex_file(fp, prog_parsed); */
   /* build_ref_table(ref_table, &ref_table_end, prog_parsed, prog_end); */
