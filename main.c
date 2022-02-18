@@ -58,13 +58,6 @@ int lex(class *class) {
   return 0;
 }
 
-void print_parsed_op(parsed_op op){
-  printf("%s", op.cmd);
-  if (*op.arg1) printf(" %s", op.arg1);
-  if (*op.arg2) printf(" %s", op.arg2);
-  printf("\n");
-}
-
 // return class_count
 int get_class_paths(class *classes, char *input) {
   int count = 0;
@@ -175,8 +168,8 @@ enum CMD {
   C_GOTO,
   C_IF,
   C_FUNCTION,
-  C_RETURN,
   C_CALL,
+  C_RETURN,
 };
 
 enum A_ARITHMETIC {
@@ -256,32 +249,22 @@ void encode_arithmetic(parsed_op *p_op, op *e_op){
 }
 
 void encode_pushpop(parsed_op *p_op, op *e_op){
-  int arg2 = atoi(p_op->arg2);
-  atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
   if (strcmp(p_op->arg1, "argument") == 0) {
     e_op->arg1 = A_ARG;
-    e_op->arg2 = arg2;
   } else if (strcmp(p_op->arg1, "local") == 0) {
     e_op->arg1 = A_LCL;
-    e_op->arg2 = arg2;
   } else if (strcmp(p_op->arg1, "static") == 0) {
     e_op->arg1 = A_STATIC;
-    e_op->arg2 = arg2;
   } else if (strcmp(p_op->arg1, "constant") == 0) {
     e_op->arg1 = A_CONST;
-    e_op->arg2 = arg2;
   } else if (strcmp(p_op->arg1, "this") == 0) {
     e_op->arg1 = A_THIS;
-    e_op->arg2 = arg2;
   } else if (strcmp(p_op->arg1, "that") == 0) {
     e_op->arg1 = A_THAT;
-    e_op->arg2 = arg2;
   } else if (strcmp(p_op->arg1, "pointer") == 0) {
     e_op->arg1 = A_POINTER;
-    e_op->arg2 = arg2;
   } else if (strcmp(p_op->arg1, "temp") == 0) {
     e_op->arg1 = A_TEMP;
-    e_op->arg2 = arg2;
   } else {
     unreachable_branch_error(p_op, __FILE__, __LINE__);
   }
@@ -298,11 +281,12 @@ void encode_ref(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
   }
   fprintf(stderr, "ERROR\n");
   fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
-  fprintf(stderr, "Reference can't be resolved: %s\n", p_op->arg1);
+  fprintf(stderr, "Reference can't be resolved: %s %s %s\n", p_op->cmd, p_op->arg1, p_op->arg2);
   exit(1);
 }
 
 void encode_cmd(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
+  int arg2 = 0;
   if (strcmp(p_op->cmd, "add") == 0 ||
       strcmp(p_op->cmd, "sub") == 0 ||
       strcmp(p_op->cmd, "neg") == 0 ||
@@ -315,10 +299,16 @@ void encode_cmd(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
     e_op->cmd = C_ARITHMETIC;
     encode_arithmetic(p_op, e_op);
   } else if (strcmp(p_op->cmd, "push") == 0) {
+    arg2 = atoi(p_op->arg2);
+    atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
     e_op->cmd = C_PUSH;
+    e_op->arg2 = arg2;
     encode_pushpop(p_op, e_op);
   } else if (strcmp(p_op->cmd, "pop") == 0) {
+    arg2 = atoi(p_op->arg2);
+    atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
     e_op->cmd = C_POP;
+    e_op->arg2 = arg2;
     encode_pushpop(p_op, e_op);
   } else if (strcmp(p_op->cmd, "label") == 0) {
     e_op->cmd = C_LABEL;
@@ -330,13 +320,20 @@ void encode_cmd(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
     e_op->cmd = C_IF;
     encode_ref(p_op, e_op, ref_tbl, curr_func);
   } else if (strcmp(p_op->cmd, "function") == 0) {
+    arg2 = atoi(p_op->arg2);
+    atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
     e_op->cmd = C_FUNCTION;
+    e_op->arg2 = arg2;
     strcpy(curr_func, p_op->arg1);
     encode_ref(p_op, e_op, ref_tbl, curr_func);
+  } else if (strcmp(p_op->cmd, "call") == 0) {
+    arg2 = atoi(p_op->arg2);
+    atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
+    e_op->cmd = C_CALL;
+    e_op->arg2 = arg2;
+    encode_ref(p_op, e_op, ref_tbl, p_op->arg1);
   } else if (strcmp(p_op->cmd, "return") == 0) {
     e_op->cmd = C_RETURN;
-  } else if (strcmp(p_op->cmd, "call") == 0) {
-    e_op->cmd = C_CALL;
   } else {
     unreachable_branch_error(p_op, __FILE__, __LINE__);
   }
@@ -350,6 +347,116 @@ void build_vm(VM *vm, ref_tbl *ref_tbl, class *classes, int class_count) {
       encode_cmd(&classes[i].prog[j], &vm->prog[vm->pc], ref_tbl, curr_func);
       vm->pc++;
     }
+  }
+}
+
+void print_parsed_op(parsed_op op){
+  printf("%s", op.cmd);
+  if (*op.arg1) printf(" %s", op.arg1);
+  if (*op.arg2) printf(" %s", op.arg2);
+  printf("\n");
+}
+
+void print_encoded_op(op *op, ref_tbl *ref_tbl){
+  int flag = 0;
+  switch(op->cmd){
+  case C_ARITHMETIC:
+    switch(op->arg1){
+    case A_ADD:
+      printf("add\n");
+      break;
+    case A_SUB:
+      printf("sub\n");
+      break;
+    case A_NEG:
+      printf("neg\n");
+      break;
+    case A_EQ:
+      printf("eq\n");
+      break;
+    case A_GT:
+      printf("gt\n");
+      break;
+    case A_LT:
+      printf("lt\n");
+      break;
+    case A_AND:
+      printf("and\n");
+      break;
+    case A_OR:
+      printf("or\n");
+      break;
+    case A_NOT:
+      printf("not\n");
+      break;
+    }
+    break;
+  case C_PUSH:
+    printf("push ");
+    flag = 1;
+  case C_POP:
+    if (!flag) printf("pop ");
+    switch(op->arg1){
+    case A_ARG:
+      printf("argument ");
+      break;
+    case A_LCL:
+      printf("local ");
+      break;
+    case A_STATIC:
+      printf("static ");
+      break;
+    case A_CONST:
+      printf("constant ");
+      break;
+    case A_THIS:
+      printf("this ");
+      break;
+    case A_THAT:
+      printf("that ");
+      break;
+    case A_POINTER:
+      printf("pointer ");
+      break;
+    case A_TEMP:
+      printf("temp ");
+      break;
+    }
+    printf("%d\n", op->arg2);
+    break;
+  case C_LABEL:
+    printf("label ");
+    flag = 1;
+  case C_GOTO:
+    if(!flag) {
+      printf("goto ");
+      flag = 1;
+    }
+  case C_IF:
+    if(!flag) printf("if-goto ");
+    for(int i = 0; i < ref_tbl->tbl_sz; i++){
+      if(ref_tbl->tbl[i].addr == op->arg1) {
+	printf("%s\n", ref_tbl->tbl[i].arg);
+	break;
+      }
+    }
+    break;
+  case C_FUNCTION:
+    printf("function ");
+    flag = 1;
+  case C_CALL:
+    if(!flag) printf("call ");
+    for(int i = 0; i < ref_tbl->tbl_sz; i++){
+      if(ref_tbl->tbl[i].addr == op->arg1) {
+	printf("%s ", ref_tbl->tbl[i].arg);
+	break;
+      }
+    }
+    printf("%d\n", op->arg2);
+    break;
+  case C_RETURN:
+    printf("return\n");
+    break;
   }
 }
 
@@ -385,6 +492,7 @@ int main(int argc, char *argv[]){
   /* printf("-----------------------------\n"); */
 
   build_ref_tbl(&ref_tbl, parsed_classes, class_count);
+
   /* for(int i = 0; i < ref_tbl.tbl_sz; i++){ */
   /*   struct ref *r = &ref_tbl.tbl[i]; */
   /*   printf("%-8d %-32s %-16s\n", r->addr, r->func, r->arg); */
@@ -392,7 +500,8 @@ int main(int argc, char *argv[]){
 
   build_vm(&vm, &ref_tbl, parsed_classes, class_count);
   for(int i = 0; i < vm.pc; i++) {
-    printf("%8d %8d %8d\n", vm.prog[i].cmd, vm.prog[i].arg1, vm.prog[i].arg2);
+    print_encoded_op(&vm.prog[i], &ref_tbl);
+    /* printf("%d %d %d\n", vm.prog[i].cmd, vm.prog[i].arg1, vm.prog[i].arg2); */
   }
   free(parsed_classes);
   return 0;
