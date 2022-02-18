@@ -132,12 +132,12 @@ struct ref {
   uint16_t addr;
 };
 
-struct ref_tbl {
+typedef struct ref_tbl {
   struct ref tbl[ROM_SZ/2];
   int tbl_sz;
-};
+} ref_tbl;
 
-void build_ref_tbl(struct ref_tbl *tbl, class *classes, int class_count) {
+void build_ref_tbl(ref_tbl *tbl, class *classes, int class_count) {
   char func[64] = {0};
   int addr = 0;
   tbl->tbl_sz = 0;
@@ -216,7 +216,7 @@ typedef struct VM {
 
 void unreachable_branch_error(parsed_op *p_op, char *filename, int line){
   fprintf(stderr, "ERROR\n");
-  fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+  fprintf(stderr, "%s:%d\n", filename, line);
   fprintf(stderr, "Unreachable branch. cmd: %s arg1: %s arg2: %s\n",
 	  p_op->cmd, p_op->arg1, p_op->arg2);
   exit(1);
@@ -225,50 +225,9 @@ void unreachable_branch_error(parsed_op *p_op, char *filename, int line){
 void atoi_error(char *snum, int n, char *filename, int line){
   if(n == 0 && snum[0] != '0'){
     fprintf(stderr, "ERROR\n");
-    fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+    fprintf(stderr, "%s:%d\n", filename, line);
     fprintf(stderr, "ATOI error: %s\n", snum);
     exit(1);
-  }
-}
-
-void encode_cmd(parsed_op *p_op, op *e_op){
-  if (strcmp(p_op->cmd, "add") == 0 ||
-      strcmp(p_op->cmd, "sub") == 0 ||
-      strcmp(p_op->cmd, "neg") == 0 ||
-      strcmp(p_op->cmd, "eq") == 0 ||
-      strcmp(p_op->cmd, "gt") == 0 ||
-      strcmp(p_op->cmd, "lt") == 0 ||
-      strcmp(p_op->cmd, "and") == 0 ||
-      strcmp(p_op->cmd, "or") == 0 ||
-      strcmp(p_op->cmd, "not") == 0) {
-    e_op->cmd = C_ARITHMETIC;
-    encode_arithmetic(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "push")) {
-    e_op->cmd = C_PUSH;
-    encode_pushpop(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "pop")) {
-    e_op->cmd = C_POP;
-    encode_pushpop(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "label")) {
-    e_op->cmd = C_LABEL;
-    encode_label(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "goto")) {
-    e_op->cmd = C_GOTO;
-    encode_goto(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "if")) {
-    e_op->cmd = C_IF;
-    encode_if(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "function")) {
-    e_op->cmd = C_FUNCTION;
-    encode_function(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "return")) {
-    e_op->cmd = C_RETURN;
-    encode_return(p_op, e_op);
-  } else if (strcmp(p_op->cmd, "call")) {
-    e_op->cmd = C_CALL;
-    encode_call(p_op, e_op);
-  } else {
-    unreachable_branch_error(p_op, __FILE__, __LINE__);
   }
 }
 
@@ -328,31 +287,68 @@ void encode_pushpop(parsed_op *p_op, op *e_op){
   }
 }
 
-void encode_label(parsed_op *p_op, op *e_op){
+// return 1 on error
+void encode_ref(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
+  for(int i = 0; i < ref_tbl->tbl_sz; i++){
+    if( strcmp(ref_tbl->tbl[i].func, curr_func) == 0 &&
+	strcmp(ref_tbl->tbl[i].arg, p_op->arg1) == 0){
+      e_op->arg1 = ref_tbl->tbl[i].addr;
+      return;
+    }
+  }
+  fprintf(stderr, "ERROR\n");
+  fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+  fprintf(stderr, "Reference can't be resolved: %s\n", p_op->arg1);
+  exit(1);
 }
 
-void encode_goto(parsed_op *p_op, op *e_op){
+void encode_cmd(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
+  if (strcmp(p_op->cmd, "add") == 0 ||
+      strcmp(p_op->cmd, "sub") == 0 ||
+      strcmp(p_op->cmd, "neg") == 0 ||
+      strcmp(p_op->cmd, "eq") == 0 ||
+      strcmp(p_op->cmd, "gt") == 0 ||
+      strcmp(p_op->cmd, "lt") == 0 ||
+      strcmp(p_op->cmd, "and") == 0 ||
+      strcmp(p_op->cmd, "or") == 0 ||
+      strcmp(p_op->cmd, "not") == 0) {
+    e_op->cmd = C_ARITHMETIC;
+    encode_arithmetic(p_op, e_op);
+  } else if (strcmp(p_op->cmd, "push") == 0) {
+    e_op->cmd = C_PUSH;
+    encode_pushpop(p_op, e_op);
+  } else if (strcmp(p_op->cmd, "pop") == 0) {
+    e_op->cmd = C_POP;
+    encode_pushpop(p_op, e_op);
+  } else if (strcmp(p_op->cmd, "label") == 0) {
+    e_op->cmd = C_LABEL;
+    encode_ref(p_op, e_op, ref_tbl, curr_func);
+  } else if (strcmp(p_op->cmd, "goto") == 0) {
+    e_op->cmd = C_GOTO;
+    encode_ref(p_op, e_op, ref_tbl, curr_func);
+  } else if (strcmp(p_op->cmd, "if-goto") == 0) {
+    e_op->cmd = C_IF;
+    encode_ref(p_op, e_op, ref_tbl, curr_func);
+  } else if (strcmp(p_op->cmd, "function") == 0) {
+    e_op->cmd = C_FUNCTION;
+    strcpy(curr_func, p_op->arg1);
+    encode_ref(p_op, e_op, ref_tbl, curr_func);
+  } else if (strcmp(p_op->cmd, "return") == 0) {
+    e_op->cmd = C_RETURN;
+  } else if (strcmp(p_op->cmd, "call") == 0) {
+    e_op->cmd = C_CALL;
+  } else {
+    unreachable_branch_error(p_op, __FILE__, __LINE__);
+  }
 }
 
-void encode_if(parsed_op *p_op, op *e_op){
-}
-
-void encode_function(parsed_op *p_op, op *e_op){
-}
-
-void encode_return(parsed_op *p_op, op *e_op){
-}
-
-void encode_call(parsed_op *p_op, op *e_op){
-}
-
-
-void build_vm(VM *vm, struct ref_tbl *tbl, class *classes, int class_count) {
-  int addr = 0;
+void build_vm(VM *vm, ref_tbl *ref_tbl, class *classes, int class_count) {
+  vm->pc = 0;
+  char curr_func[64] = {0};
   for(int i = 0; i < class_count; i++){
     for(int j = 0; j < classes[i].prog_lines; j++){
-      
-      addr++;
+      encode_cmd(&classes[i].prog[j], &vm->prog[vm->pc], ref_tbl, curr_func);
+      vm->pc++;
     }
   }
 }
@@ -362,7 +358,8 @@ int main(int argc, char *argv[]){
   int class_count = 0;
   int errnum; 
   char *input = NULL;
-  struct ref_tbl ref_tbl;
+  ref_tbl ref_tbl;
+  VM vm = {0};
   // no input given
   if (argc < 2) {
     exit(1);
@@ -387,12 +384,16 @@ int main(int argc, char *argv[]){
 
   /* printf("-----------------------------\n"); */
 
-  /* build_ref_tbl(&ref_tbl, parsed_classes, class_count); */
+  build_ref_tbl(&ref_tbl, parsed_classes, class_count);
   /* for(int i = 0; i < ref_tbl.tbl_sz; i++){ */
   /*   struct ref *r = &ref_tbl.tbl[i]; */
   /*   printf("%-8d %-32s %-16s\n", r->addr, r->func, r->arg); */
   /* } */
 
+  build_vm(&vm, &ref_tbl, parsed_classes, class_count);
+  for(int i = 0; i < vm.pc; i++) {
+    printf("%8d %8d %8d\n", vm.prog[i].cmd, vm.prog[i].arg1, vm.prog[i].arg2);
+  }
   free(parsed_classes);
   return 0;
 }
