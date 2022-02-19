@@ -31,12 +31,14 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 
-  printf("%d\n", classes->ref_tbl.tbl_sz);
-  for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){
-    printf("%-8d %-32s %-32s\n", classes->ref_tbl.tbl[i].addr,
-	   classes->ref_tbl.tbl[i].func,
-	   classes->ref_tbl.tbl[i].arg);
-  }
+  /* print_parsed_prog(classes); */
+
+  /* printf("%d\n", classes->ref_tbl.tbl_sz); */
+  /* for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){ */
+  /*   printf("%-8d %-32s %-32s\n", classes->ref_tbl.tbl[i].addr, */
+  /* 	   classes->ref_tbl.tbl[i].func, */
+  /* 	   classes->ref_tbl.tbl[i].arg); */
+  /* } */
 
   /* if(build_vm(&vm, classes)) { */
   /*   fprintf(stderr, "Error during parsing classes: %s\n", input); */

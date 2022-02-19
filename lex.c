@@ -212,7 +212,7 @@ int parse_classes(parsed_classes *classes, char *input){
   int class_count = 0;
   classes->class_count = get_class_paths(classes->classes, input);
   for(int i = 0; i < classes->class_count; i++){
-    lex(classes->classes);
+    lex(&classes->classes[i]);
   }
   build_ref_tbl(classes);
   return 0;
