@@ -4,6 +4,14 @@
 #include <stdint.h>
 #include "config.h"
 
+#define SP_P		0
+#define LCL_BASE_P	1
+#define ARG_BASE_P	2
+#define THIS_BASE_P	3
+#define THAT_BASE_P	4
+#define TEMP_BASE	5
+#define STATIC_BASE_P   16
+
 enum CMD {
   C_ARITHMETIC,
   C_PUSH,
