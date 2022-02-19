@@ -85,7 +85,7 @@ int get_class_paths(class *classes, char *input) {
 void unreachable_branch_error(char *msg, char *filename, int line){
   fprintf(stderr, "ERROR\n");
   fprintf(stderr, "%s:%d\n", filename, line);
-  fprintf(stderr, "%s\n", msg);
+  fprintf(stderr, "Unreachable branch: %s\n", msg);
   exit(1);
 }
 

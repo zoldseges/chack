@@ -40,11 +40,11 @@ int main(int argc, char *argv[]){
   /* 	   classes->ref_tbl.tbl[i].arg); */
   /* } */
 
-  /* if(build_vm(&vm, classes)) { */
-  /*   fprintf(stderr, "Error during parsing classes: %s\n", input); */
-  /*   exit(1); */
-  /* } */
-  /* print_vm_prog(&vm, classes); */
+  if(build_vm(&vm, classes)) {
+    fprintf(stderr, "Error during parsing classes: %s\n", input);
+    exit(1);
+  }
+  print_vm_prog(&vm, classes);
   free(classes);
   return 0;
 }
