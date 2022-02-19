@@ -44,7 +44,7 @@ int exec_arithmetic(op *op, int16_t *ram){
   case A_OR:
     b = ram[--ram[SP_P]];
     a = ram[--ram[SP_P]];
-    ram[ram[SP_P]++] = a & b;
+    ram[ram[SP_P]++] = a | b;
     break;
   case A_NOT:
     a = ram[--ram[SP_P]];

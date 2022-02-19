@@ -49,29 +49,22 @@ int main(int argc, char *argv[]){
 
   /*test*/
   vm.ram[0] = 256;
-  vm.ram[1] = 300;
-  vm.ram[2] = 400;
-  vm.ram[3] = 3000;
-  vm.ram[4] = 3010;
 
   for(int i = 0; i < vm.prog_lines; i++) {
     step(&vm);
   }
   
-  printf("RAM[0] =%d\n", vm.ram[0]);
-  printf("RAM[1] =%d\n", vm.ram[1]);
-  printf("RAM[2] =%d\n", vm.ram[2]);
-  printf("RAM[3] =%d\n", vm.ram[3]);
-  printf("RAM[4] =%d\n", vm.ram[4]);
-  printf("-------------------------\n");
-  printf("RAM[256] =%d\n", vm.ram[256]);
-  printf("RAM[300] =%d\n", vm.ram[300]);
-  printf("RAM[401] =%d\n", vm.ram[401]);
-  printf("RAM[402] =%d\n", vm.ram[402]);
-  printf("RAM[3006]=%d\n", vm.ram[3006]);
-  printf("RAM[3012]=%d\n", vm.ram[3012]);
-  printf("RAM[3015]=%d\n", vm.ram[3015]);
-  printf("RAM[11]  =%d\n", vm.ram[11]);
+  printf("RAM[0]=%d\n", vm.ram[0]);
+  printf("RAM[256]=%d\n", vm.ram[256]);
+  printf("RAM[257]=%d\n", vm.ram[257]);
+  printf("RAM[258]=%d\n", vm.ram[258]);
+  printf("RAM[259]=%d\n", vm.ram[259]);
+  printf("RAM[260]=%d\n", vm.ram[260]);
+  printf("RAM[261]=%d\n", vm.ram[261]);
+  printf("RAM[262]=%d\n", vm.ram[262]);
+  printf("RAM[263]=%d\n", vm.ram[263]);
+  printf("RAM[264]=%d\n", vm.ram[264]);
+  printf("RAM[265]=%d\n", vm.ram[265]);
   free(classes);
   return 0;
 }
