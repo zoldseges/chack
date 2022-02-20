@@ -41,31 +41,46 @@ void test_stacktest(){
   char *input = "test_input/stackarithmetic/StackTest.vm";
   VM vm = {0};
   build_vm_from_fpath(&vm, input);
-
   vm.ram[0] = 256;
-  
   run(&vm);
-  
-  assert(vm.ram[0] == 266);
-  assert(vm.ram[256] == -1);
-  assert(vm.ram[257] == 0);
-  assert(vm.ram[258] == 0);
-  assert(vm.ram[259] == 0);
-  assert(vm.ram[260] == -1);
-  assert(vm.ram[261] == 0);
-  assert(vm.ram[262] == -1);
-  assert(vm.ram[263] == 0);
-  assert(vm.ram[264] == 0);
+  assert(vm.ram[0  ] == 266);
+  assert(vm.ram[256] == -1 );
+  assert(vm.ram[257] == 0  );
+  assert(vm.ram[258] == 0  );
+  assert(vm.ram[259] == 0  );
+  assert(vm.ram[260] == -1 );
+  assert(vm.ram[261] == 0  );
+  assert(vm.ram[262] == -1 );
+  assert(vm.ram[263] == 0  );
+  assert(vm.ram[264] == 0  );
   assert(vm.ram[265] == -91);
   printf("%s passed\n", input);
 }
 
 void test_basictest(){
-
+  char *input = "test_input/memoryaccess/BasicTest.vm";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+  vm.ram[0] = 256;
+  vm.ram[1] = 300;
+  vm.ram[2] = 400;
+  vm.ram[3] = 3000;
+  vm.ram[4] = 3010;
+  run(&vm);
+  assert(vm.ram[256 ]	== 472);
+  assert(vm.ram[300 ]	== 10 );
+  assert(vm.ram[401 ]	== 21 );
+  assert(vm.ram[402 ]	== 22 );
+  assert(vm.ram[3006]	== 36 );
+  assert(vm.ram[3012]	== 42 );
+  assert(vm.ram[3015]	== 45 );
+  assert(vm.ram[11  ]	== 510);
+  printf("%s passed\n", input);
 }
 
 int main() {
   test_assign_static();
   test_stacktest();
+  test_basictest();
   return 0;
 }
