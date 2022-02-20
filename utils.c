@@ -115,7 +115,7 @@ void print_parsed_prog(parsed_classes *classes){
   }
 }
 
-void __print_encoded_op(op *op, ref_tbl *ref_tbl){
+void __print_encoded_op(op *op, ref_tbl *ref_tbl, char *cname){
   int flag = 0;
   switch(op->cmd){
   case C_ARITHMETIC:
@@ -155,29 +155,41 @@ void __print_encoded_op(op *op, ref_tbl *ref_tbl){
   case C_POP:
     if (!flag) printf("pop ");
     switch(op->arg1){
-    case A_ARG:
+    case S_ARG:
       printf("argument %d\n",	op->arg2);
       break;
-    case A_LCL:
+    case S_LCL:
       printf("local %d\n",	op->arg2);
       break;
-    case A_STATIC:
-      int arg2 = 0;
-      printf("static %d\n",     arg2);
+    case S_STATIC:
+      char *arg2 = NULL;
+      for(int i = 0; i < ref_tbl->tbl_sz; i++){
+	if((strcmp(ref_tbl->tbl[i].class, cname) == 0) &&
+	   (ref_tbl->tbl[i].addr == op->arg2)) {
+	  arg2 = ref_tbl->tbl[i].arg2;
+	}
+      }
+      if (arg2 == NULL) {
+	fprintf(stderr, "ERROR\n");
+	fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+	fprintf(stderr, "Error while dereferencing static variable\n");
+	exit(1);
+      }
+      printf("static %s\n",     arg2);
       break;
-    case A_CONST:
+    case S_CONST:
       printf("constant %d\n",	op->arg2);
       break;
-    case A_THIS:
+    case S_THIS:
       printf("this %d\n",	op->arg2);
       break;
-    case A_THAT:
+    case S_THAT:
       printf("that %d\n",	op->arg2);
       break;
-    case A_POINTER:
+    case S_POINTER:
       printf("pointer %d\n",	op->arg2);
       break;
-    case A_TEMP:
+    case S_TEMP:
       printf("temp %d\n",	op->arg2);
       break;
     }
@@ -219,8 +231,17 @@ void __print_encoded_op(op *op, ref_tbl *ref_tbl){
 }
 
 void print_vm_prog(VM *vm, parsed_classes *classes){
+  char *cname = NULL;
+  int class_index = 0;
+  int class_prog_index = 0;
   for(int i = 0; i < vm->prog_lines; i++){
-    __print_encoded_op(&vm->prog[i], &classes->ref_tbl);
+    if (class_prog_index >= classes->classes[class_index].prog_lines){
+      class_index++;
+      class_prog_index = 0;
+    }
+    cname = classes->classes[class_index].cname;
+    __print_encoded_op(&vm->prog[i], &classes->ref_tbl, cname);
+    class_prog_index++;
   }
 }
 

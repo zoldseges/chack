@@ -36,15 +36,15 @@ enum A_ARITHMETIC {
   A_NOT
 };
 
-enum A_SEGMENT {
-  A_ARG,
-  A_LCL,
-  A_STATIC,
-  A_CONST,
-  A_THIS,
-  A_THAT,
-  A_POINTER,
-  A_TEMP
+enum S_SEGMENT {
+  S_ARG,
+  S_LCL,
+  S_STATIC,
+  S_CONST,
+  S_THIS,
+  S_THAT,
+  S_POINTER,
+  S_TEMP
 };
   
 typedef struct parsed_op {

@@ -56,30 +56,30 @@ int exec_arithmetic(op *op, int16_t *ram){
 
 int exec_push(op *op, int16_t *ram) {
   switch(op->arg1){
-  case A_ARG:
+  case S_ARG:
     ram[ram[SP_P]++] = ram[ram[ARG_BASE_P] + op->arg2];
     break;
-  case A_LCL:
+  case S_LCL:
     ram[ram[SP_P]++] = ram[ram[LCL_BASE_P] + op->arg2];
     break;
-  case A_STATIC:
+  case S_STATIC:
     fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
     exit(1);
     break;
-  case A_CONST:
+  case S_CONST:
     ram[ram[SP_P]++] = op->arg2;
     break;
-  case A_THIS:
+  case S_THIS:
     ram[ram[SP_P]++] = ram[ram[THIS_BASE_P] + op->arg2];
     break;
-  case A_THAT:
+  case S_THAT:
     ram[ram[SP_P]++] = ram[ram[THAT_BASE_P] + op->arg2];
     break;
-  case A_POINTER:
+  case S_POINTER:
     fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
     exit(1);
     break;
-  case A_TEMP:
+  case S_TEMP:
     /* ERROR DETECTION */
     /*
       if(op->arg2 > 7) {
@@ -103,27 +103,27 @@ int exec_push(op *op, int16_t *ram) {
 int exec_pop(op *op, int16_t *ram) {
   int16_t val = ram[--ram[SP_P]];
   switch(op->arg1){
-  case A_ARG:
+  case S_ARG:
     ram[ram[ARG_BASE_P] + op->arg2] = val;
     break;
-  case A_LCL:
+  case S_LCL:
     ram[ram[LCL_BASE_P] + op->arg2] = val;
     break;
-  case A_STATIC:
+  case S_STATIC:
     fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
     exit(1);
     break;
-  case A_THIS:
+  case S_THIS:
     ram[ram[THIS_BASE_P] + op->arg2] = val;
     break;
-  case A_THAT:
+  case S_THAT:
     ram[ram[THAT_BASE_P] + op->arg2] = val;
     break;
-  case A_POINTER:
+  case S_POINTER:
     fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
     exit(1);
     break;
-  case A_TEMP:
+  case S_TEMP:
     /* ERROR DETECTION */
     /*
       if(op->arg2 > 7) {

@@ -28,39 +28,25 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 
-  /* print_parsed_prog(classes); */
-
-  /* printf("%d\n", classes->ref_tbl.tbl_sz); */
-  /* for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){ */
-  /*   printf("%-8d %-32s %-32s\n", classes->ref_tbl.tbl[i].addr, */
-  /* 	   classes->ref_tbl.tbl[i].func, */
-  /* 	   classes->ref_tbl.tbl[i].arg); */
-  /* } */
-
   if(build_vm_from_classes(&vm, classes)) {
     fprintf(stderr, "Error during parsing classes: %s\n", input);
     exit(1);
   }
-  /* print_vm_prog(&vm, classes); */
+  /* print_parsed_prog(classes); */
+  print_vm_prog(&vm, classes);
+
+  /* for(int i = 0; i < classes->ref_tbl.tbl_sz; i++) { */
+  /*   struct ref *ref = &classes->ref_tbl.tbl[i]; */
+  /*   printf("%-12s %-32s %-24s %-12s, %d\n", ref->class, ref->func, ref->arg1, ref->arg2, ref->addr); */
+  /* } */
 
   /*test*/
   vm.ram[0] = 256;
 
-  for(int i = 0; i < vm.prog_lines; i++) {
-    step(&vm);
-  }
+  /* for(int i = 0; i < vm.prog_lines; i++) { */
+  /*   step(&vm); */
+  /* } */
   
-  printf("RAM[0]=%d\n", vm.ram[0]);
-  printf("RAM[256]=%d\n", vm.ram[256]);
-  printf("RAM[257]=%d\n", vm.ram[257]);
-  printf("RAM[258]=%d\n", vm.ram[258]);
-  printf("RAM[259]=%d\n", vm.ram[259]);
-  printf("RAM[260]=%d\n", vm.ram[260]);
-  printf("RAM[261]=%d\n", vm.ram[261]);
-  printf("RAM[262]=%d\n", vm.ram[262]);
-  printf("RAM[263]=%d\n", vm.ram[263]);
-  printf("RAM[264]=%d\n", vm.ram[264]);
-  printf("RAM[265]=%d\n", vm.ram[265]);
   free(classes);
   return 0;
 }

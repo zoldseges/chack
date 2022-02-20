@@ -151,21 +151,21 @@ void encode_arithmetic(parsed_op *p_op, op *e_op){
 
 void encode_pushpop(parsed_op *p_op, op *e_op){
   if (strcmp(p_op->arg1, "argument") == 0) {
-    e_op->arg1 = A_ARG;
+    e_op->arg1 = S_ARG;
   } else if (strcmp(p_op->arg1, "local") == 0) {
-    e_op->arg1 = A_LCL;
+    e_op->arg1 = S_LCL;
   } else if (strcmp(p_op->arg1, "static") == 0) {
-    e_op->arg1 = A_STATIC;
+    e_op->arg1 = S_STATIC;
   } else if (strcmp(p_op->arg1, "constant") == 0) {
-    e_op->arg1 = A_CONST;
+    e_op->arg1 = S_CONST;
   } else if (strcmp(p_op->arg1, "this") == 0) {
-    e_op->arg1 = A_THIS;
+    e_op->arg1 = S_THIS;
   } else if (strcmp(p_op->arg1, "that") == 0) {
-    e_op->arg1 = A_THAT;
+    e_op->arg1 = S_THAT;
   } else if (strcmp(p_op->arg1, "pointer") == 0) {
-    e_op->arg1 = A_POINTER;
+    e_op->arg1 = S_POINTER;
   } else if (strcmp(p_op->arg1, "temp") == 0) {
-    e_op->arg1 = A_TEMP;
+    e_op->arg1 = S_TEMP;
   } else {
     char *msg = NULL;
     sprintf(msg, "Unreachable branch. cmd: %s arg1: %s arg2: %s\n",
@@ -174,7 +174,6 @@ void encode_pushpop(parsed_op *p_op, op *e_op){
   }
 }
 
-// return 1 on error
 void encode_ref(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
   for(int i = 0; i < ref_tbl->tbl_sz; i++){
     if( strcmp(ref_tbl->tbl[i].func, curr_func) == 0 &&
@@ -189,8 +188,29 @@ void encode_ref(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
   exit(1);
 }
 
-void encode_cmd(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
-  int arg2 = 0;
+
+
+// looks up static variable argument in reftable and returns its static address
+uint16_t encode_static_var_arg(char *cname, char *arg2, ref_tbl *ref_tbl) {
+  uint16_t addr = 0;
+  for(int i = 0; i < ref_tbl->tbl_sz; i++){
+    if((strcmp(ref_tbl->tbl[i].class, cname) == 0) &&
+       (strcmp(ref_tbl->tbl[i].arg2, arg2) == 0)) {
+      return ref_tbl->tbl[i].addr;
+    }
+  }
+  fprintf(stderr, "ERROR\n");
+  fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+  fprintf(stderr, "Static variable reference can't be resolved: class: %s arg2: %s\n", cname, arg2);
+  exit(1);
+}
+
+void encode_cmd(parsed_op *p_op,
+		op *e_op,
+		ref_tbl *ref_tbl,
+		char *curr_func,
+		char *curr_class){
+  uint16_t arg2 = 0;
   if (strcmp(p_op->cmd, "add") == 0 ||
       strcmp(p_op->cmd, "sub") == 0 ||
       strcmp(p_op->cmd, "neg") == 0 ||
@@ -206,14 +226,24 @@ void encode_cmd(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
     arg2 = atoi(p_op->arg2);
     atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
     e_op->cmd = C_PUSH;
-    e_op->arg2 = arg2;
     encode_pushpop(p_op, e_op);
+    if(e_op->arg1 == S_STATIC){
+      arg2 = encode_static_var_arg(curr_class, p_op->arg2, ref_tbl);
+    } else {
+      arg2 = atoi(p_op->arg2);
+      atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
+    }
+    e_op->arg2 = arg2;
   } else if (strcmp(p_op->cmd, "pop") == 0) {
-    arg2 = atoi(p_op->arg2);
-    atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
     e_op->cmd = C_POP;
-    e_op->arg2 = arg2;
     encode_pushpop(p_op, e_op);
+    if(e_op->arg1 == S_STATIC){
+      arg2 = encode_static_var_arg(curr_class, p_op->arg2, ref_tbl);
+    } else {
+      arg2 = atoi(p_op->arg2);
+      atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
+    }
+    e_op->arg2 = arg2;
   } else if (strcmp(p_op->cmd, "label") == 0) {
     e_op->cmd = C_LABEL;
     encode_ref(p_op, e_op, ref_tbl, curr_func);
@@ -228,6 +258,7 @@ void encode_cmd(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
     atoi_error(p_op->arg2, arg2, __FILE__, __LINE__);
     e_op->cmd = C_FUNCTION;
     e_op->arg2 = arg2;
+    // TODO cp pointer instead of string lex.c:282
     strcpy(curr_func, p_op->arg1);
     encode_ref(p_op, e_op, ref_tbl, curr_func);
   } else if (strcmp(p_op->cmd, "call") == 0) {
@@ -250,8 +281,19 @@ void __build_vm(VM *vm, ref_tbl *ref_tbl, class *classes, int class_count) {
   vm->prog_lines = 0;
   char curr_func[64] = {0};
   for(int i = 0; i < class_count; i++){
+    // debug
+    /* printf("----  %-12s----\n", classes[i].cname); */
     for(int j = 0; j < classes[i].prog_lines; j++){
-      encode_cmd(&classes[i].prog[j], &vm->prog[vm->prog_lines], ref_tbl, curr_func);
+      // debug
+      /* printf("%-12s %-32s %-8s\n", classes[i].prog[j].cmd, */
+      /* 	     classes[i].prog[j].arg1, classes[i].prog[j].arg2); */
+      // debug
+      /* printf("%8d %s\n", j, ref_tbl->tbl[0].func); */
+      encode_cmd(&classes[i].prog[j],
+		 &vm->prog[vm->prog_lines],
+		 ref_tbl,
+		 curr_func,
+		 classes[i].cname);
       vm->prog_lines++;
     }
   }
@@ -265,6 +307,14 @@ int parse_classes(parsed_classes *classes, char *input){
     lex(&classes->classes[i]);
   }
   build_ref_tbl(classes);
+  // debug
+  /* for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){ */
+  /*   struct ref *ref = &classes->ref_tbl.tbl[i]; */
+  /*   printf("%-12s %-32s %-32s %-8s %d\n", ref->class, */
+  /* 	   ref->func, ref->arg1, ref->arg2, ref->addr); */
+	   
+  /* } */
+  
   return 0;
 }
 
