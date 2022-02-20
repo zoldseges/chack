@@ -4,5 +4,6 @@
 #include "types.h"
 
 int step(VM *vm);
+void run(VM *vm);
 
 #endif /* __VM_H__ */

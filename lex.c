@@ -89,7 +89,7 @@ void build_ref_tbl(parsed_classes *classes) {
       parsed_op *op = &classes->classes[i].prog[j];
       is_label	  = !strcmp(op->cmd, "label");
       is_function = !strcmp(op->cmd, "function");
-      /* is_static	  = !strcmp(op-> */
+
       if (is_label || is_function) {
 	if (is_function) {
 	  strcpy(func, classes->classes[i].prog[j].arg1);
@@ -100,7 +100,7 @@ void build_ref_tbl(parsed_classes *classes) {
 	classes->ref_tbl.tbl_sz++;
 	curr_ref = &classes->ref_tbl.tbl[classes->ref_tbl.tbl_sz];
       }
-      /* } else if (is_static */
+      is_static	  = !strcmp(op->arg1, "static");
       addr++;
     }
   }
@@ -257,10 +257,11 @@ int parse_classes(parsed_classes *classes, char *input){
 }
 
 // returns 0 on success
-int build_vm(VM *vm, parsed_classes *classes){
+int build_vm_from_classes(VM *vm, parsed_classes *classes){
   for(int i = 0; i < classes->class_count; i++){
     lex(&classes->classes[i]);
   }
   __build_vm(vm, &classes->ref_tbl, classes->classes, classes->class_count);
   return 0;
 }
+

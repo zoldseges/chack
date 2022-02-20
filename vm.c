@@ -170,3 +170,9 @@ int step(VM *vm){
   }
   return 0;
 }
+
+void run(VM *vm){
+  while(vm->pc < vm->prog_lines){
+    step(vm);
+  }
+}

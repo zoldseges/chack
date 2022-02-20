@@ -1,6 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "utils.h"
+#include "types.h"
+#include "lex.h"
+#include "vm.h"
 
 int assign_static(char *, char *);
 
@@ -31,7 +37,35 @@ void test_assign_static(){
   printf("%s passed\n", __func__);
 }
 
+void test_stacktest(){
+  char *input = "test_input/stackarithmetic/StackTest.vm";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+
+  vm.ram[0] = 256;
+  
+  run(&vm);
+  
+  assert(vm.ram[0] == 266);
+  assert(vm.ram[256] == -1);
+  assert(vm.ram[257] == 0);
+  assert(vm.ram[258] == 0);
+  assert(vm.ram[259] == 0);
+  assert(vm.ram[260] == -1);
+  assert(vm.ram[261] == 0);
+  assert(vm.ram[262] == -1);
+  assert(vm.ram[263] == 0);
+  assert(vm.ram[264] == 0);
+  assert(vm.ram[265] == -91);
+  printf("%s passed\n", input);
+}
+
+void test_basictest(){
+
+}
+
 int main() {
   test_assign_static();
+  test_stacktest();
   return 0;
 }

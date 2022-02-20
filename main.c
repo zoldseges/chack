@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <dirent.h>
-#include <errno.h>
 
 #include "types.h"
 #include "utils.h"
@@ -11,10 +10,7 @@
 #include "lex.h"
 #include "vm.h"
 
-extern int errno;
-
 int main(int argc, char *argv[]){
-  int errnum; 
   char *input = NULL;
   parsed_classes *classes = NULL;
   classes = malloc(sizeof(parsed_classes));
@@ -41,7 +37,7 @@ int main(int argc, char *argv[]){
   /* 	   classes->ref_tbl.tbl[i].arg); */
   /* } */
 
-  if(build_vm(&vm, classes)) {
+  if(build_vm_from_classes(&vm, classes)) {
     fprintf(stderr, "Error during parsing classes: %s\n", input);
     exit(1);
   }

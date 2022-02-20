@@ -5,6 +5,8 @@
 #include <dirent.h>
 
 #include "types.h"
+#include "lex.h"
+#include "vm.h"
 
 /*
   returns 0 on error
@@ -220,4 +222,32 @@ void print_vm_prog(VM *vm, parsed_classes *classes){
   for(int i = 0; i < vm->prog_lines; i++){
     __print_encoded_op(&vm->prog[i], &classes->ref_tbl);
   }
+}
+
+// returns 0 on success
+int build_vm_from_fpath(VM *vm, char *input){
+  parsed_classes *classes = NULL;
+  classes = malloc(sizeof(parsed_classes));
+  if(classes == NULL){
+    fprintf(stderr, "ERROR\n");
+    fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+    fprintf(stderr, "Error during malloc\n");
+    exit(1);
+  }
+
+  if(parse_classes(classes, input)) {
+    fprintf(stderr, "ERROR\n");
+    fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+    fprintf(stderr, "Error during parsing classes: %s\n", input);
+    exit(1);
+  }
+
+  if(build_vm_from_classes(vm, classes)) {
+    fprintf(stderr, "ERROR\n");
+    fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+    fprintf(stderr, "Error during parsing classes: %s\n", input);
+    exit(1);
+  }
+  free(classes);
+  return 0;
 }

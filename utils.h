@@ -1,6 +1,8 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include "types.h"
+
 void unreachable_branch_error(char *msg, char *filename, int line);
 void atoi_error(char *snum, int n, char *filename, int line);
 
@@ -19,5 +21,8 @@ int is_file_or_dir(char *path);
   returns class_count
 */
 int get_class_paths(class *classes, char *input);
+
+// returns 0 on success
+int build_vm_from_fpath(VM *vm, char *input);
 
 #endif /* __UTILS_H__ */
