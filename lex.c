@@ -75,12 +75,11 @@ int assign_static(char *class, char *arg2) {
 }
 
 void build_ref_tbl(parsed_classes *classes) {
-  char  func[64]    = {0};
-  char  class[64]   = {0};
-  int	addr	    = 0;
-  int	is_label    = 0;
-  int	is_function = 0;
-  int	is_static   = 0;
+  char  *func		= NULL;
+  int	addr		= 0;
+  int	is_label	= 0;
+  int	is_function	= 0;
+  int	is_static	= 0;
   classes->ref_tbl.tbl_sz = 0;
 
   struct ref *curr_ref = classes->ref_tbl.tbl;
@@ -92,15 +91,28 @@ void build_ref_tbl(parsed_classes *classes) {
 
       if (is_label || is_function) {
 	if (is_function) {
-	  strcpy(func, classes->classes[i].prog[j].arg1);
+	  func = op->arg1;
 	}
-	strcpy(curr_ref->func, func);
-	strcpy(curr_ref->arg, classes->classes[i].prog[j].arg1);
-	curr_ref->addr = addr;
+	curr_ref->class = classes->classes[i].cname;
+	curr_ref->func	= func;
+	curr_ref->arg1	= op->arg1;
+	curr_ref->arg2  = is_function ? op->arg2 : "-1";
+	curr_ref->addr	= addr;
 	classes->ref_tbl.tbl_sz++;
 	curr_ref = &classes->ref_tbl.tbl[classes->ref_tbl.tbl_sz];
       }
-      is_static	  = !strcmp(op->arg1, "static");
+      is_static	  = ( ( (strcmp(op->cmd, "push") == 0) ||
+		     (strcmp(op->cmd, "pull") == 0) ) &&
+		     (strcmp(op->arg1, "static") == 0) );
+      if (is_static) {
+	curr_ref->class = classes->classes[i].cname;
+	curr_ref->func	= func;
+	curr_ref->arg1	= op->arg1;
+	curr_ref->arg2	= op->arg2;
+	curr_ref->addr  = assign_static(curr_ref->class, curr_ref->arg2);
+	classes->ref_tbl.tbl_sz++;
+	curr_ref = &classes->ref_tbl.tbl[classes->ref_tbl.tbl_sz];
+      }
       addr++;
     }
   }
@@ -166,7 +178,7 @@ void encode_pushpop(parsed_op *p_op, op *e_op){
 void encode_ref(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
   for(int i = 0; i < ref_tbl->tbl_sz; i++){
     if( strcmp(ref_tbl->tbl[i].func, curr_func) == 0 &&
-	strcmp(ref_tbl->tbl[i].arg, p_op->arg1) == 0){
+	strcmp(ref_tbl->tbl[i].arg1, p_op->arg1) == 0){
       e_op->arg1 = ref_tbl->tbl[i].addr;
       return;
     }

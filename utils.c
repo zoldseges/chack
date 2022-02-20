@@ -156,31 +156,31 @@ void __print_encoded_op(op *op, ref_tbl *ref_tbl){
     if (!flag) printf("pop ");
     switch(op->arg1){
     case A_ARG:
-      printf("argument ");
+      printf("argument %d\n",	op->arg2);
       break;
     case A_LCL:
-      printf("local ");
+      printf("local %d\n",	op->arg2);
       break;
     case A_STATIC:
-      printf("static ");
+      int arg2 = 0;
+      printf("static %d\n",     arg2);
       break;
     case A_CONST:
-      printf("constant ");
+      printf("constant %d\n",	op->arg2);
       break;
     case A_THIS:
-      printf("this ");
+      printf("this %d\n",	op->arg2);
       break;
     case A_THAT:
-      printf("that ");
+      printf("that %d\n",	op->arg2);
       break;
     case A_POINTER:
-      printf("pointer ");
+      printf("pointer %d\n",	op->arg2);
       break;
     case A_TEMP:
-      printf("temp ");
+      printf("temp %d\n",	op->arg2);
       break;
     }
-    printf("%d\n", op->arg2);
     break;
   case C_LABEL:
     printf("label ");
@@ -194,7 +194,7 @@ void __print_encoded_op(op *op, ref_tbl *ref_tbl){
     if(!flag) printf("if-goto ");
     for(int i = 0; i < ref_tbl->tbl_sz; i++){
       if(ref_tbl->tbl[i].addr == op->arg1) {
-	printf("%s\n", ref_tbl->tbl[i].arg);
+	printf("%s\n", ref_tbl->tbl[i].arg1);
 	break;
       }
     }
@@ -206,7 +206,7 @@ void __print_encoded_op(op *op, ref_tbl *ref_tbl){
     if(!flag) printf("call ");
     for(int i = 0; i < ref_tbl->tbl_sz; i++){
       if(ref_tbl->tbl[i].addr == op->arg1) {
-	printf("%s ", ref_tbl->tbl[i].arg);
+	printf("%s ", ref_tbl->tbl[i].arg1);
 	break;
       }
     }

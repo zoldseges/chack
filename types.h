@@ -61,9 +61,10 @@ typedef struct class {
 } class;
 
 struct ref {
-  char class[64];
-  char func[64];
-  char arg[64];
+  char *class;
+  char *func;
+  char *arg1;
+  char *arg2;
   uint16_t addr;
 };
 
