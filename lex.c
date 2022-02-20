@@ -75,18 +75,21 @@ int assign_static(char *class, char *arg2) {
 }
 
 void build_ref_tbl(parsed_classes *classes) {
-  char func[64] = {0};
-  int addr = 0;
+  char  func[64]    = {0};
+  char  class[64]   = {0};
+  int	addr	    = 0;
+  int	is_label    = 0;
+  int	is_function = 0;
+  int	is_static   = 0;
   classes->ref_tbl.tbl_sz = 0;
-  int is_label = 0;
-  int is_function = 0;
-  int is_static = 0;
+
   struct ref *curr_ref = classes->ref_tbl.tbl;
   for(int i = 0; i < classes->class_count; i++){
     for(int j = 0; j < classes->classes[i].prog_lines; j++){
-      is_label = !strcmp(classes->classes[i].prog[j].cmd, "label");
-      is_function = !strcmp(classes->classes[i].prog[j].cmd, "function");
-      
+      parsed_op *op = &classes->classes[i].prog[j];
+      is_label	  = !strcmp(op->cmd, "label");
+      is_function = !strcmp(op->cmd, "function");
+      /* is_static	  = !strcmp(op-> */
       if (is_label || is_function) {
 	if (is_function) {
 	  strcpy(func, classes->classes[i].prog[j].arg1);
@@ -97,6 +100,7 @@ void build_ref_tbl(parsed_classes *classes) {
 	classes->ref_tbl.tbl_sz++;
 	curr_ref = &classes->ref_tbl.tbl[classes->ref_tbl.tbl_sz];
       }
+      /* } else if (is_static */
       addr++;
     }
   }
