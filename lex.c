@@ -42,17 +42,51 @@ int lex(class *class) {
   building VM
 */
 
+/*
+ returns given address of static variable
+*/
+
+int assign_static(char *class, char *arg2) {
+  static char *store[ROM_SZ] = {NULL};
+  static int store_end = 0;
+  int addr = STATIC_BASE_P;
+  char *curr_class = NULL;
+  char *curr_arg2 = NULL;
+  for(int i = 0; i < store_end; i+=2){
+    curr_class = store[i];
+    curr_arg2 = store[i+1];
+    if((strcmp(curr_class, class) == 0) &&
+       (strcmp(curr_arg2, arg2) == 0)){
+      return addr;
+    }
+    addr++;
+  }
+  
+  if(addr + STATIC_BASE_P >= 256){
+    fprintf(stderr, "ERROR\n");
+    fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+    fprintf(stderr, "Static segment filled\n");
+    exit(1);
+  }
+  
+  store[store_end++] = class;
+  store[store_end++] = arg2;
+  return addr;
+}
+
 void build_ref_tbl(parsed_classes *classes) {
   char func[64] = {0};
   int addr = 0;
   classes->ref_tbl.tbl_sz = 0;
   int is_label = 0;
   int is_function = 0;
+  int is_static = 0;
   struct ref *curr_ref = classes->ref_tbl.tbl;
   for(int i = 0; i < classes->class_count; i++){
     for(int j = 0; j < classes->classes[i].prog_lines; j++){
       is_label = !strcmp(classes->classes[i].prog[j].cmd, "label");
       is_function = !strcmp(classes->classes[i].prog[j].cmd, "function");
+      
       if (is_label || is_function) {
 	if (is_function) {
 	  strcpy(func, classes->classes[i].prog[j].arg1);
