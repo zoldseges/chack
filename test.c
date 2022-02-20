@@ -85,9 +85,9 @@ void test_statictest(){
   vm.ram[0] = 256;
   run(&vm);
   assert(vm.ram[256] == 1110);
-  for(int i = 16; i < 25; i++){
-    printf("%d: %d\n", i, vm.ram[i]);
-  }
+  assert(vm.ram[16 ] == 888);
+  assert(vm.ram[17 ] == 333);
+  assert(vm.ram[18 ] == 111);
   printf("%s passed\n", input);
 }
 

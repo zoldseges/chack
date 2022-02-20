@@ -46,9 +46,17 @@ int lex(class *class) {
  returns given address of static variable
 */
 
-int assign_static(char *class, char *arg2) {
+// resets if class and arg2 == NULL
+uint16_t assign_static(char *class, char *arg2) {
   static char *store[ROM_SZ] = {NULL};
   static int store_end = 0;
+  if (class == NULL && arg2 == NULL){
+    for(int i = 0; i < store_end; i++){
+      store[i] = NULL;
+    }
+    store_end = 0;
+    return -1;
+  }
   int addr = STATIC_BASE_P;
   char *curr_class = NULL;
   char *curr_arg2 = NULL;
@@ -82,6 +90,8 @@ void build_ref_tbl(parsed_classes *classes) {
   int	is_static	= 0;
   classes->ref_tbl.tbl_sz = 0;
 
+  // reset static store
+  assign_static(NULL, NULL);
   struct ref *curr_ref = classes->ref_tbl.tbl;
   for(int i = 0; i < classes->class_count; i++){
     for(int j = 0; j < classes->classes[i].prog_lines; j++){
@@ -308,12 +318,12 @@ int parse_classes(parsed_classes *classes, char *input){
   }
   build_ref_tbl(classes);
   // debug
-  for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){
-    struct ref *ref = &classes->ref_tbl.tbl[i];
-    printf("%-12s %-32s %-32s %-8s %d\n", ref->class,
-	   ref->func, ref->arg1, ref->arg2, ref->addr);
+  /* for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){ */
+  /*   struct ref *ref = &classes->ref_tbl.tbl[i]; */
+  /*   printf("%-12s %-32s %-32s %-8s %d\n", ref->class, */
+  /* 	   ref->func, ref->arg1, ref->arg2, ref->addr); */
 	   
-  }
+  /* } */
   
   return 0;
 }
