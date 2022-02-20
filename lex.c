@@ -102,7 +102,7 @@ void build_ref_tbl(parsed_classes *classes) {
 	curr_ref = &classes->ref_tbl.tbl[classes->ref_tbl.tbl_sz];
       }
       is_static	  = ( ( (strcmp(op->cmd, "push") == 0) ||
-		     (strcmp(op->cmd, "pull") == 0) ) &&
+		     (strcmp(op->cmd, "pop") == 0) ) &&
 		     (strcmp(op->arg1, "static") == 0) );
       if (is_static) {
 	curr_ref->class = classes->classes[i].cname;
@@ -142,7 +142,7 @@ void encode_arithmetic(parsed_op *p_op, op *e_op){
   } else if (strcmp(p_op->cmd, "not") == 0) {
     e_op->arg1 = A_NOT;
   } else {
-    char *msg = NULL;
+    char msg[128] = {0};
     sprintf(msg, "Unreachable branch. cmd: %s arg1: %s arg2: %s\n",
 	    p_op->cmd, p_op->arg1, p_op->arg2);
     unreachable_branch_error(msg, __FILE__, __LINE__);
@@ -167,7 +167,7 @@ void encode_pushpop(parsed_op *p_op, op *e_op){
   } else if (strcmp(p_op->arg1, "temp") == 0) {
     e_op->arg1 = S_TEMP;
   } else {
-    char *msg = NULL;
+    char msg[128] = {0};
     sprintf(msg, "Unreachable branch. cmd: %s arg1: %s arg2: %s\n",
 	    p_op->cmd, p_op->arg1, p_op->arg2);
     unreachable_branch_error(msg, __FILE__, __LINE__);
@@ -270,7 +270,7 @@ void encode_cmd(parsed_op *p_op,
   } else if (strcmp(p_op->cmd, "return") == 0) {
     e_op->cmd = C_RETURN;
   } else {
-    char *msg = NULL;
+    char msg[128] = {0};
     sprintf(msg, "Unreachable branch. cmd: %s arg1: %s arg2: %s\n",
 	    p_op->cmd, p_op->arg1, p_op->arg2);
     unreachable_branch_error(msg, __FILE__, __LINE__);
@@ -308,12 +308,12 @@ int parse_classes(parsed_classes *classes, char *input){
   }
   build_ref_tbl(classes);
   // debug
-  /* for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){ */
-  /*   struct ref *ref = &classes->ref_tbl.tbl[i]; */
-  /*   printf("%-12s %-32s %-32s %-8s %d\n", ref->class, */
-  /* 	   ref->func, ref->arg1, ref->arg2, ref->addr); */
+  for(int i = 0; i < classes->ref_tbl.tbl_sz; i++){
+    struct ref *ref = &classes->ref_tbl.tbl[i];
+    printf("%-12s %-32s %-32s %-8s %d\n", ref->class,
+	   ref->func, ref->arg1, ref->arg2, ref->addr);
 	   
-  /* } */
+  }
   
   return 0;
 }

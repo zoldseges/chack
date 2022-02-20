@@ -63,8 +63,7 @@ int exec_push(op *op, int16_t *ram) {
     ram[ram[SP_P]++] = ram[ram[LCL_BASE_P] + op->arg2];
     break;
   case S_STATIC:
-    fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
-    exit(1);
+    ram[ram[SP_P]++] = ram[op->arg2];
     break;
   case S_CONST:
     ram[ram[SP_P]++] = op->arg2;
@@ -76,7 +75,7 @@ int exec_push(op *op, int16_t *ram) {
     ram[ram[SP_P]++] = ram[ram[THAT_BASE_P] + op->arg2];
     break;
   case S_POINTER:
-    fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
+    fprintf(stderr, "%s:%d: Unimplemented\n", __FILE__, __LINE__);
     exit(1);
     break;
   case S_TEMP:
@@ -91,7 +90,7 @@ int exec_push(op *op, int16_t *ram) {
     ram[ram[SP_P]++] = ram[TEMP_BASE + op->arg2];
     break;
   default:
-    char *msg = NULL;
+    char msg[128] = {0};
     sprintf(msg, "Can't push segment: code %d\n",
 	    op->arg1);
     unreachable_branch_error(msg, __FILE__, __LINE__);
@@ -110,8 +109,7 @@ int exec_pop(op *op, int16_t *ram) {
     ram[ram[LCL_BASE_P] + op->arg2] = val;
     break;
   case S_STATIC:
-    fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
-    exit(1);
+    ram[op->arg2] = val;
     break;
   case S_THIS:
     ram[ram[THIS_BASE_P] + op->arg2] = val;
@@ -120,7 +118,7 @@ int exec_pop(op *op, int16_t *ram) {
     ram[ram[THAT_BASE_P] + op->arg2] = val;
     break;
   case S_POINTER:
-    fprintf(stderr, "&s:&d: Unimplemented\n", __FILE__, __LINE__);
+    fprintf(stderr, "%s:%d: Unimplemented\n", __FILE__, __LINE__);
     exit(1);
     break;
   case S_TEMP:
@@ -135,7 +133,7 @@ int exec_pop(op *op, int16_t *ram) {
     ram[TEMP_BASE + op->arg2] = val;
     break;
   default:
-    char *msg = NULL;
+    char msg[128] = {0};
     sprintf(msg, "Can't be poped into segment: code: %d\n",
 	    op->arg1);
     unreachable_branch_error(msg, __FILE__, __LINE__);
@@ -162,7 +160,7 @@ int step(VM *vm){
     vm->pc++;
     break;
   default:
-    char *msg = NULL;
+    char msg[128] = {0};
     sprintf(msg, "CMD can't be executed: code: %d\n",
 	    op->cmd);
     unreachable_branch_error(msg, __FILE__, __LINE__);

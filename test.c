@@ -78,9 +78,23 @@ void test_basictest(){
   printf("%s passed\n", input);
 }
 
+void test_statictest(){
+  char *input = "test_input/memoryaccess/StaticTest.vm";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+  vm.ram[0] = 256;
+  run(&vm);
+  assert(vm.ram[256] == 1110);
+  for(int i = 16; i < 25; i++){
+    printf("%d: %d\n", i, vm.ram[i]);
+  }
+  printf("%s passed\n", input);
+}
+
 int main() {
   test_assign_static();
   test_stacktest();
   test_basictest();
+  test_statictest();
   return 0;
 }
