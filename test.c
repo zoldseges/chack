@@ -91,10 +91,25 @@ void test_statictest(){
   printf("%s passed\n", input);
 }
 
+
+void test_pointertest(){
+  char *input = "test_input/memoryaccess/PointerTest.vm";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+  vm.ram[0] = 256;
+  run(&vm);
+  assert(vm.ram[256 ] == 6084);
+  assert(vm.ram[3   ] == 3030);
+  assert(vm.ram[4   ] == 3040);
+  assert(vm.ram[3032] == 32  );
+  assert(vm.ram[3046] == 46  );
+  printf("%s passed\n", input);
+}
 int main() {
   test_assign_static();
   test_stacktest();
   test_basictest();
   test_statictest();
+  test_pointertest();
   return 0;
 }
