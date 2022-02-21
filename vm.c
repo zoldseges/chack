@@ -192,6 +192,7 @@ int step(VM *vm){
     for(int i = 0; i < op->arg2; i++){
       ram[ram[SP_P]++] = 0;
     }
+    vm->pc++;
     break;
   case C_CALL:
     ram[ram[SP_P]++] = vm->pc + 1;
@@ -204,14 +205,14 @@ int step(VM *vm){
     vm->pc = op->arg1;
     break;
   case C_RETURN:
-    uint16_t frame = ram[LCL_BASE_P];
-    uint16_t ret_addr = ram[frame - 5];
-    ram[ARG_BASE_P] = ram[--ram[SP_P]];
-    ram[SP_P] = ram[ARG_BASE_P] + 1;
-    uint16_t ret_addr = ram[frame - 1];
-    uint16_t ret_addr = ram[frame - 2];
-    uint16_t ret_addr = ram[frame - 3];
-    uint16_t ret_addr = ram[frame - 4];
+    uint16_t frame		= ram[LCL_BASE_P];
+    uint16_t ret_addr		= ram[frame - 5];
+    ram[ram[ARG_BASE_P]]	= ram[--ram[SP_P]];
+    ram[SP_P]			= ram[ARG_BASE_P] + 1;
+    ram[THAT_BASE_P]		= ram[frame - 1];
+    ram[THIS_BASE_P]		= ram[frame - 2];
+    ram[ARG_BASE_P]		= ram[frame - 3];
+    ram[LCL_BASE_P]		= ram[frame - 4];
     vm->pc = ret_addr;
     break;
   default:
