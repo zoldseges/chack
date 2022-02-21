@@ -47,19 +47,6 @@ enum S_SEGMENT {
   S_TEMP
 };
   
-typedef struct parsed_op {
-  char cmd[32];
-  char arg1[64];
-  char arg2[32];
-} parsed_op;
-
-typedef struct class {
-  char fpath[256];
-  char cname[64];
-  parsed_op prog[ROM_SZ];
-  int prog_lines;
-} class;
-
 struct ref {
   char *class;
   char *func;
@@ -72,6 +59,19 @@ typedef struct ref_tbl {
   struct ref tbl[ROM_SZ/2];
   int tbl_sz;
 } ref_tbl;
+
+typedef struct parsed_op {
+  char cmd[32];
+  char arg1[64];
+  char arg2[32];
+} parsed_op;
+
+typedef struct class {
+  char fpath[256];
+  char cname[64];
+  parsed_op prog[ROM_SZ];
+  int prog_lines;
+} class;
 
 typedef struct parsed_classes {
   class classes[64];

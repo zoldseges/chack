@@ -171,12 +171,25 @@ void test_fibonaccielement(){
   char *input = "test_input/functioncalls/FibonacciElement";
   VM vm = {0};
   build_vm_from_fpath(&vm, input);
-  vm.ram[0] = 261;
-  for(int i = 0; i < 110; i++){
+  for(int i = 0; i < 300; i++){
     step(&vm);
   }
   assert(vm.ram[0  ] == 262);
   assert(vm.ram[261] == 3  );
+  printf("%s passed\n", input);
+}
+
+
+void test_staticstest(){
+  char *input = "test_input/functioncalls/StaticsTest";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+  for(int i = 0; i < 100; i++){
+    step(&vm);
+  }
+  assert(vm.ram[0  ] ==  263);
+  assert(vm.ram[261] == -2 );
+  assert(vm.ram[262] ==  8  );
   printf("%s passed\n", input);
 }
 
@@ -190,5 +203,6 @@ int main() {
   test_fibonacciseries();
   test_simplefunction();
   test_fibonaccielement();
+  test_staticstest();
   return 0;
 }

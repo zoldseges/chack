@@ -7,14 +7,26 @@
 
 // return 0 on success
 int lex(class *class) {
-  FILE *fp = fopen(class->fpath, "r");
+  FILE *fp = NULL;
   char *line = NULL;
   size_t len = 0;
   int prog_line = 0;
   char *token = NULL;
   parsed_op *curr = NULL;
-  parsed_op *next = class->prog;
+  parsed_op *next = NULL;
   
+  // inject bootstrap code
+  if(strcmp(class->fpath, "__BOOTSTRAP__") == 0) {
+    curr = class->prog;
+    strcpy(curr->cmd, "call");
+    strcpy(curr->arg1, "Sys.init");
+    strcpy(curr->arg2, "0");
+    class->prog_lines++;
+    return 0;
+  }
+
+  fp = fopen(class->fpath, "r");
+  next = class->prog;
   while(getline(&line, &len, fp) != -1){
     token = strtok(line, " \n");
     // skip comments and empty lines
@@ -83,7 +95,7 @@ uint16_t assign_static(char *class, char *arg2) {
 }
 
 void build_ref_tbl(parsed_classes *classes) {
-  char  *func		= "__NOFUNC__";
+  char  *func		= "__BOOTSTRAP__";
   int	addr		= 0;
   int	is_label	= 0;
   int	is_function	= 0;
@@ -289,16 +301,23 @@ void encode_cmd(parsed_op *p_op,
 
 void __build_vm(VM *vm, ref_tbl *ref_tbl, class *classes, int class_count) {
   vm->prog_lines = 0;
-  char curr_func[64] = "__NOFUNC__";
+  char curr_func[64] = "__BOOTSTRAP__";
+  /*
+    set SP
+   */
+  vm->ram[0] = 256;
   for(int i = 0; i < class_count; i++){
     // debug
     /* printf("----  %-12s----\n", classes[i].cname); */
+    // end debug
     for(int j = 0; j < classes[i].prog_lines; j++){
       // debug
       /* printf("%-12s %-32s %-8s\n", classes[i].prog[j].cmd, */
       /* 	     classes[i].prog[j].arg1, classes[i].prog[j].arg2); */
+      // end debug
       // debug
       /* printf("%8d %s\n", j, ref_tbl->tbl[0].func); */
+      // end debug
       encode_cmd(&classes[i].prog[j],
 		 &vm->prog[vm->prog_lines],
 		 ref_tbl,

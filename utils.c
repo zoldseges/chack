@@ -63,6 +63,11 @@ int get_class_paths(class *classes, char *input) {
       perror("Error:");
       exit(1);
     }
+    // inject bootstrap code
+    strcpy(classes[count].fpath, "__BOOTSTRAP__");
+    strcpy(classes[count].cname, "__BOOTSTRAP__");
+    count++;
+
     while((dir = readdir(d)) != NULL){
       string_i = 0;
       while(dir->d_name[string_i] != '\0') string_i++;
@@ -206,7 +211,11 @@ void __print_encoded_op(op *op, ref_tbl *ref_tbl, char *cname){
     if(!flag) printf("if-goto ");
     for(int i = 0; i < ref_tbl->tbl_sz; i++){
       if(ref_tbl->tbl[i].addr == op->arg1) {
-	printf("%s\n", ref_tbl->tbl[i].arg1);
+	printf("%s", ref_tbl->tbl[i].arg1);
+	// debug
+	/* printf(" %d", op->arg1); */
+	// end debug
+	printf("\n");
 	break;
       }
     }
@@ -232,14 +241,25 @@ void __print_encoded_op(op *op, ref_tbl *ref_tbl, char *cname){
 
 void print_vm_prog(VM *vm, parsed_classes *classes){
   char *cname = NULL;
+  char *prev_cname = NULL;
   int class_index = 0;
   int class_prog_index = 0;
+
   for(int i = 0; i < vm->prog_lines; i++){
     if (class_prog_index >= classes->classes[class_index].prog_lines){
       class_index++;
       class_prog_index = 0;
     }
+
     cname = classes->classes[class_index].cname;
+    // print class
+    // debug
+    /* if((prev_cname == NULL) || (strcmp(prev_cname, cname) != 0)){ */
+    /*   cname = classes->classes[class_index].cname; */
+    /*   printf("----  %-12s  ----\n", cname); */
+    /*   prev_cname = cname; */
+    /* } */
+    // end debug
     __print_encoded_op(&vm->prog[i], &classes->ref_tbl, cname);
     class_prog_index++;
   }
@@ -269,6 +289,9 @@ int build_vm_from_fpath(VM *vm, char *input){
     fprintf(stderr, "Error during parsing classes: %s\n", input);
     exit(1);
   }
+  // debug
+  /* print_vm_prog(vm, classes); */
+  // end debug
   free(classes);
   return 0;
 }
