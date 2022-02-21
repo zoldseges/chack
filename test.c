@@ -120,6 +120,25 @@ void test_basicloop(){
   printf("%s passed\n", input);
 }
 
+void test_fibonacciseries(){
+  char *input = "test_input/programflow/FibonacciSeries.vm";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+  vm.ram[0  ] = 256 ;
+  vm.ram[1  ] = 300 ;
+  vm.ram[2  ] = 400 ;
+  vm.ram[400] = 6   ;
+  vm.ram[401] = 3000;
+  run(&vm);
+  assert(vm.ram[3000] == 0);
+  assert(vm.ram[3001] == 1);
+  assert(vm.ram[3002] == 1);
+  assert(vm.ram[3003] == 2);
+  assert(vm.ram[3004] == 3);
+  assert(vm.ram[3005] == 5);
+  printf("%s passed\n", input);
+}
+
 int main() {
   test_assign_static();
   test_stacktest();
@@ -127,5 +146,6 @@ int main() {
   test_statictest();
   test_pointertest();
   test_basicloop();
+  test_fibonacciseries();
   return 0;
 }
