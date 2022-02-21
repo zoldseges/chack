@@ -330,9 +330,6 @@ int parse_classes(parsed_classes *classes, char *input){
 
 // returns 0 on success
 int build_vm_from_classes(VM *vm, parsed_classes *classes){
-  for(int i = 0; i < classes->class_count; i++){
-    lex(&classes->classes[i]);
-  }
   __build_vm(vm, &classes->ref_tbl, classes->classes, classes->class_count);
   return 0;
 }
