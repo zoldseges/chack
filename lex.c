@@ -83,7 +83,7 @@ uint16_t assign_static(char *class, char *arg2) {
 }
 
 void build_ref_tbl(parsed_classes *classes) {
-  char  *func		= NULL;
+  char  *func		= "__NOFUNC__";
   int	addr		= 0;
   int	is_label	= 0;
   int	is_function	= 0;
@@ -289,7 +289,7 @@ void encode_cmd(parsed_op *p_op,
 
 void __build_vm(VM *vm, ref_tbl *ref_tbl, class *classes, int class_count) {
   vm->prog_lines = 0;
-  char curr_func[64] = {0};
+  char curr_func[64] = "__NOFUNC__";
   for(int i = 0; i < class_count; i++){
     // debug
     /* printf("----  %-12s----\n", classes[i].cname); */

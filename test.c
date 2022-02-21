@@ -91,7 +91,6 @@ void test_statictest(){
   printf("%s passed\n", input);
 }
 
-
 void test_pointertest(){
   char *input = "test_input/memoryaccess/PointerTest.vm";
   VM vm = {0};
@@ -105,11 +104,28 @@ void test_pointertest(){
   assert(vm.ram[3046] == 46  );
   printf("%s passed\n", input);
 }
+
+
+void test_basicloop(){
+  char *input = "test_input/programflow/BasicLoop.vm";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+  vm.ram[0  ] = 256;
+  vm.ram[1  ] = 300;
+  vm.ram[2  ] = 400;
+  vm.ram[400] = 3  ;
+  run(&vm);
+  assert(vm.ram[0  ] == 257);
+  assert(vm.ram[256] == 6  );
+  printf("%s passed\n", input);
+}
+
 int main() {
   test_assign_static();
   test_stacktest();
   test_basictest();
   test_statictest();
   test_pointertest();
+  test_basicloop();
   return 0;
 }

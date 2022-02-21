@@ -139,13 +139,12 @@ int exec_pop(op *op, int16_t *ram) {
     break;
   case S_TEMP:
     /* ERROR DETECTION */
-    /*
-      if(op->arg2 > 7) {
+    
+    if(op->arg2 > 7) {
       fprintf(stderr, "ERROR\n");
-      fprintfstderr, "%s:%d\n", __FILE__, __LINE__);
+      fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
       fprintf(stderr, "Invalid temp address: %d\n", op->arg2);
-}
-     */
+    }
     ram[TEMP_BASE + op->arg2] = val;
     break;
   default:
@@ -175,6 +174,23 @@ int step(VM *vm){
     exec_pop(op, ram);
     vm->pc++;
     break;
+  case C_LABEL:
+    vm->pc++;
+    break;
+  case C_GOTO:
+    vm->pc = op->arg1;
+    vm->pc++;
+    break;
+  case C_IF:
+    int16_t cond = ram[--ram[SP_P]];
+    if( cond != 0 ){
+      vm->pc = op->arg1;
+    }
+    vm->pc++;
+    break;
+  /* C_FUNCTION, */
+  /* C_CALL, */
+  /* C_RETURN, */
   default:
     char msg[128] = {0};
     sprintf(msg, "CMD can't be executed: code: %d\n",
@@ -186,7 +202,13 @@ int step(VM *vm){
 }
 
 void run(VM *vm){
+  
   while(vm->pc < vm->prog_lines){
     step(vm);
+    // debug
+    /* printf("%d %d\n",0, vm->ram[0]); */
+    /* printf("%d %d\n",vm->ram[0] - 1, vm->ram[vm->ram[0]-1]); */
+    /* printf("-----------\n"); */
+    // end debug
   }
 }
