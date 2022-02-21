@@ -150,7 +150,6 @@ void test_simplefunction(){
   vm.ram[4  ] = 4000;
   vm.ram[310] = 1234;
   vm.ram[311] = 37  ;
-  /* vm.ram[312] = 1000; */
   vm.ram[312] = 9   ;
   vm.ram[313] = 305 ;
   vm.ram[314] = 300 ;
@@ -167,6 +166,20 @@ void test_simplefunction(){
   assert(vm.ram[310] == 1196);
   printf("%s passed\n", input);
 }
+
+void test_fibonaccielement(){
+  char *input = "test_input/functioncalls/FibonacciElement";
+  VM vm = {0};
+  build_vm_from_fpath(&vm, input);
+  vm.ram[0] = 261;
+  for(int i = 0; i < 110; i++){
+    step(&vm);
+  }
+  assert(vm.ram[0  ] == 262);
+  assert(vm.ram[261] == 3  );
+  printf("%s passed\n", input);
+}
+
 int main() {
   test_assign_static();
   test_stacktest();
@@ -176,5 +189,6 @@ int main() {
   test_basicloop();
   test_fibonacciseries();
   test_simplefunction();
+  test_fibonaccielement();
   return 0;
 }
