@@ -105,7 +105,7 @@ void atoi_error(char *snum, int n, char *filename, int line){
   }
 }
 
-void __print_parsed_op(parsed_op op){
+void print_parsed_op(parsed_op op){
   printf("%s", op.cmd);
   if (*op.arg1) printf(" %s", op.arg1);
   if (*op.arg2) printf(" %s", op.arg2);
@@ -115,7 +115,7 @@ void __print_parsed_op(parsed_op op){
 void print_parsed_prog(parsed_classes *classes){
   for(int i = 0; i < classes->class_count; i++){
     for(int j = 0; j < classes->classes[i].prog_lines; j++){
-      __print_parsed_op(classes->classes[i].prog[j]);
+      print_parsed_op(classes->classes[i].prog[j]);
     }
   }
 }
@@ -290,6 +290,7 @@ int build_vm_from_fpath(VM *vm, char *input){
     exit(1);
   }
   // debug
+  /* print_parsed_prog(classes); */
   /* print_vm_prog(vm, classes); */
   // end debug
   free(classes);

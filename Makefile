@@ -1,7 +1,7 @@
-SRC_FILES := $(wildcard *.c)
-SRC_FILES := $(filter-out test.c, $(SRC_FILES))
-TEST_FILES := $(wildcard *.c)
-TEST_FILES := $(filter-out main.c, $(TEST_FILES))
+SRC_FILES := $(wildcard src/*.c)
+SRC_FILES := $(filter-out src/test.c, $(SRC_FILES))
+TEST_FILES := $(wildcard src/*.c)
+TEST_FILES := $(filter-out src/main.c, $(TEST_FILES))
 
 debug: $(SRC_FILES) $(wildcard *.h)
 	gcc -o chack $(SRC_FILES) -g

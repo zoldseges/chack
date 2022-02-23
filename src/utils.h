@@ -7,6 +7,7 @@ void unreachable_branch_error(char *msg, char *filename, int line);
 void atoi_error(char *snum, int n, char *filename, int line);
 
 void print_parsed_prog(parsed_classes *classes);
+void print_parsed_op(parsed_op op);
 void print_vm_prog(VM *vm, parsed_classes *classes);
 
 /*

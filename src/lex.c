@@ -323,6 +323,9 @@ void __build_vm(VM *vm, ref_tbl *ref_tbl, class *classes, int class_count) {
 		 ref_tbl,
 		 curr_func,
 		 classes[i].cname);
+      // debug
+      /* print_parsed_op(classes[i].prog[j]); */
+      // end debug
       vm->prog_lines++;
     }
   }

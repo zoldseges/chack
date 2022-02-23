@@ -3,3 +3,4 @@ test
 ignored
 *.bak
 TAGS
+test.gdb
