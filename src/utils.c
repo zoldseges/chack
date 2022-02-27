@@ -293,6 +293,9 @@ int build_vm_from_fpath(VM *vm, char *input){
   /* print_parsed_prog(classes); */
   /* print_vm_prog(vm, classes); */
   // end debug
+
+  vm->run = 1;
+  
   free(classes);
   return 0;
 }

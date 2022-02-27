@@ -2,6 +2,9 @@
 #define __TYPES_H__
 
 #include <stdint.h>
+#include <linux/fb.h>
+#include <termios.h>
+#include <pthread.h>
 #include "config.h"
 
 #define SP_P		0
@@ -11,6 +14,18 @@
 #define THAT_BASE_P	4
 #define TEMP_BASE	5
 #define STATIC_BASE_P   16
+
+struct screen {
+  struct fb_var_screeninfo vinfo;
+  struct fb_fix_screeninfo finfo;
+  char *fbp;
+  int fbfd;
+  long screensize;
+  struct termios oldt;
+  struct termios newt;
+
+  pthread_t dp_tid;
+};
 
 enum CMD {
   C_ARITHMETIC,
@@ -86,10 +101,12 @@ typedef struct encoded_op {
 } op;
 
 typedef struct VM {
-  int16_t ram[RAM_SZ];
+  uint16_t ram[RAM_SZ];
   op prog[ROM_SZ];
   int pc;
   int prog_lines;
+  struct screen scr;
+  int run;
 } VM;
 
 #endif /* __TYPES_H__ */
