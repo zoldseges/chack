@@ -227,12 +227,15 @@ int step(VM *vm){
 
 void run(VM *vm){
   
-  while(vm->pc < vm->prog_lines){
+  while((vm->pc < vm->prog_lines) &&
+	vm->run){
     step(vm);
     // debug
     /* printf("%d %d\n",0, vm->ram[0]); */
     /* printf("%d %d\n",vm->ram[0] - 1, vm->ram[vm->ram[0]-1]); */
     /* printf("-----------\n"); */
     // end debug
+
+    
   }
 }

@@ -101,7 +101,7 @@ typedef struct encoded_op {
 } op;
 
 typedef struct VM {
-  uint16_t ram[RAM_SZ];
+  int16_t ram[RAM_SZ];
   op prog[ROM_SZ];
   int pc;
   int prog_lines;

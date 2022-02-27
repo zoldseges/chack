@@ -41,7 +41,6 @@ void test_stacktest(){
   char *input = "test_input/stackarithmetic/StackTest.vm";
   VM vm = {0};
   build_vm_from_fpath(&vm, input);
-  vm.ram[0] = 256;
   run(&vm);
   assert(vm.ram[0  ] == 266);
   assert(vm.ram[256] == -1 );

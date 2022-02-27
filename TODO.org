@@ -1,8 +1,7 @@
 * DONE move headers to matching sourcefile
 * TODO io
-** TODO exit loop
 ** TODO keyboard  
-** TODO loop
+** TODO interrupt handler
 ** DONE screen
    
 * TODO remove unneeded includes from sourcefiles
