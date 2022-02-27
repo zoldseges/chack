@@ -9,7 +9,7 @@
 #include "config.h"
 #include "lex.h"
 #include "vm.h"
-#include "screen.h"
+#include "vmio.h"
 
 int main(int argc, char *argv[]){
   char *input = "test_input/screen";
