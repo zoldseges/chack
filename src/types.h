@@ -15,7 +15,7 @@
 #define TEMP_BASE	5
 #define STATIC_BASE_P   16
 
-struct screen {
+struct io {
   struct fb_var_screeninfo vinfo;
   struct fb_fix_screeninfo finfo;
   char *fbp;
@@ -25,6 +25,7 @@ struct screen {
   struct termios newt;
 
   pthread_t dp_tid;
+  pthread_t kb_tid;
 };
 
 enum CMD {
@@ -105,7 +106,7 @@ typedef struct VM {
   op prog[ROM_SZ];
   int pc;
   int prog_lines;
-  struct screen scr;
+  struct io io;
   int run;
 } VM;
 

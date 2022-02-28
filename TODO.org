@@ -1,7 +1,14 @@
 * DONE move headers to matching sourcefile
 * TODO io
-** TODO keyboard  
 ** TODO interrupt handler
+** DONE keyboard  
 ** DONE screen
    
+* TODO fix
+** TODO screen
+*** TODO vmio.c:display_routine
+   looks way too complicated
+*** TODO hackenstein and mush are torn
+
+
 * TODO remove unneeded includes from sourcefiles
