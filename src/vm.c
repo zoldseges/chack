@@ -205,8 +205,8 @@ int step(VM *vm){
     vm->pc = op->arg1;
     break;
   case C_RETURN:
-    uint16_t frame		= ram[LCL_BASE_P];
-    uint16_t ret_addr		= ram[frame - 5];
+    int16_t frame		= ram[LCL_BASE_P];
+    int16_t ret_addr		= ram[frame - 5];
     ram[ram[ARG_BASE_P]]	= ram[--ram[SP_P]];
     ram[SP_P]			= ram[ARG_BASE_P] + 1;
     ram[THAT_BASE_P]		= ram[frame - 1];

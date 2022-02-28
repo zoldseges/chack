@@ -59,7 +59,7 @@ int lex(class *class) {
 */
 
 // resets if class and arg2 == NULL
-uint16_t assign_static(char *class, char *arg2) {
+int16_t assign_static(char *class, char *arg2) {
   static char *store[ROM_SZ] = {NULL};
   static int store_end = 0;
   if (class == NULL && arg2 == NULL){
@@ -213,8 +213,8 @@ void encode_ref(parsed_op *p_op, op *e_op, ref_tbl *ref_tbl, char *curr_func){
 
 
 // looks up static variable argument in reftable and returns its static address
-uint16_t encode_static_var_arg(char *cname, char *arg2, ref_tbl *ref_tbl) {
-  uint16_t addr = 0;
+int16_t encode_static_var_arg(char *cname, char *arg2, ref_tbl *ref_tbl) {
+  int16_t addr = 0;
   for(int i = 0; i < ref_tbl->tbl_sz; i++){
     if((strcmp(ref_tbl->tbl[i].class, cname) == 0) &&
        (strcmp(ref_tbl->tbl[i].arg2, arg2) == 0)) {
@@ -232,7 +232,7 @@ void encode_cmd(parsed_op *p_op,
 		ref_tbl *ref_tbl,
 		char *curr_func,
 		char *curr_class){
-  uint16_t arg2 = 0;
+  int16_t arg2 = 0;
   if (strcmp(p_op->cmd, "add") == 0 ||
       strcmp(p_op->cmd, "sub") == 0 ||
       strcmp(p_op->cmd, "neg") == 0 ||

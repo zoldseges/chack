@@ -68,7 +68,7 @@ struct ref {
   char *func;
   char *arg1;
   char *arg2;
-  uint16_t addr;
+  int16_t addr;
 };
 
 typedef struct ref_tbl {
@@ -97,8 +97,8 @@ typedef struct parsed_classes {
 
 typedef struct encoded_op {
   enum CMD cmd;
-  uint16_t arg1;
-  uint16_t arg2;
+  int16_t arg1;
+  int16_t arg2;
 } op;
 
 typedef struct VM {

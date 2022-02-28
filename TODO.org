@@ -6,9 +6,14 @@
    
 * TODO fix
 ** TODO screen
+*** TODO hackenstein and mush are torn
+**** TODO int uint16 int16 might be inconsequent through the codebase
+**** TODO reimplement operations with bit manipulations
+     because maybe 16bit ~ 15bit operations conflict
 *** TODO vmio.c:display_routine
    looks way too complicated
-*** TODO hackenstein and mush are torn
-
-
+   
+** TODO keyboard
+   switch back to 0 with sleep might be badly implemented
+   
 * TODO remove unneeded includes from sourcefiles
