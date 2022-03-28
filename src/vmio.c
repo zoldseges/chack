@@ -17,11 +17,11 @@ void *display_routine(void *vm_raw){
   int a = 0;
   while(*run) {
     a++;
-    int x = 10;
+    int x = 400;
     int y = 100;
     int col = 100;
     for(int i = 512; i < 768; i++){
-      x = 10;
+      x = 400;
       for(int j = 0; j < 32; j++){
 	uint16_t byte = ram[i*32 + j];
 	for(int k = 0; k < 16; k++) {
@@ -29,15 +29,15 @@ void *display_routine(void *vm_raw){
 	    (io->vinfo.bits_per_pixel/8) +
 	    (y+io->vinfo.yoffset) * io->finfo.line_length;
 	  if(byte & 1){
-	    *(fbp + location) = (int)(512-x/3);        // Some blue
+	    *(fbp + location) = 0;        // Some blue
 	    *(fbp + location + 1) = 0;     // A little green
-	    *(fbp + location + 2) = (int)x/2.2;    // A lot of red
+	    *(fbp + location + 2) = 0;    // A lot of red
 	    *(fbp + location + 3) = 0;      // No transparency
 	    location += 4;
 	  } else {
-	    *(fbp + location) = 0;        // Some blue
-	    *(fbp + location + 1) = (int)x/2.3;     // A little green
-	    *(fbp + location + 2) = 200-(y-100)/5;    // A lot of red
+	    *(fbp + location) = 255;        // Some blue
+	    *(fbp + location + 1) = 255;     // A little green
+	    *(fbp + location + 2) = 255;    // A lot of red
 	    *(fbp + location + 3) = 0;      // No transparency
 	    location += 4;
 	  }

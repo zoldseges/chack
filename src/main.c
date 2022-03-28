@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
   build_vm_from_fpath(&vm, input);
   vm.run = 1;
   connect_io(&vm);
+  int flag = 0;
   while(vm.run){
     step(&vm);
   }
